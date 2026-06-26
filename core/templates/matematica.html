@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matemática</title>
+    <style>
+        body {
+            background-color: #1e3f20;
+            background-image: 
+                radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%),
+                radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%);
+            background-size: 6px 6px;
+            background-position: 0 0, 3px 3px;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .decoracao-giz {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.08;
+            font-size: 1.8em;
+            color: #ffffff;
+            pointer-events: none;
+            user-select: none;
+            padding: 20px;
+            box-sizing: border-box;
+            line-height: 2em;
+            font-weight: bold;
+        }
+        .giz-top-left { position: absolute; top: 40px; left: 40px; }
+        .giz-top-right { position: absolute; top: 40px; right: 40px; text-align: right; }
+        .giz-bottom-left { position: absolute; bottom: 40px; left: 40px; }
+        .giz-bottom-right { position: absolute; bottom: 40px; right: 40px; text-align: right; }
+
+        .conteudo {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 40px;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .grid-menu {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 700px;
+        }
+
+        .card {
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            width: 160px;
+            text-align: center;
+            text-decoration: none;
+            color: #222222;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
+            transition: transform 0.2s;
+            border: 3px solid #b0b0b0;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            background-color: #eeeeee;
+        }
+
+        .icone {
+            font-size: 3.5em; 
+            display: block;
+            margin-bottom: 5px;
+            color: #00a8ff; 
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .icone sup {
+            font-size: 0.6em;
+        }
+
+        .btn-voltar {
+            margin-top: 40px;
+            background-color: #bdc3c7;
+            color: #2c3e50;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 30px;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+            transition: background-color 0.2s, color 0.2s;
+            border: 2px solid #95a5a6;
+        }
+        .btn-voltar:hover {
+            background-color: #ecf0f1;
+            color: #000;
+        }
+
+        /* AJUSTES PARA CELULAR (TELAS DE MENU) */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8em; margin-top: 50px; margin-bottom: 20px; }
+            .grid-menu { gap: 15px; justify-content: center; }
+            .card { width: 130px; padding: 20px 10px; font-size: 1em; }
+            .icone { font-size: 2.2em; margin-bottom: 10px; }
+            .decoracao-giz { font-size: 1.2em; opacity: 0.05; }
+            .barra-superior { right: 10px; top: 10px; }
+            .btn-voltar { font-size: 0.85em; padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="decoracao-giz">
+        <div class="giz-top-left">5 + 3 = 8<br>9 - 4 = 5</div>
+        <div class="giz-top-right">6 × 7 = 42<br>20 ÷ 4 = 5</div>
+        <div class="giz-bottom-left">3² = 9<br>2⁵ = 32</div>
+        <div class="giz-bottom-right">√25 = 5<br>√64 = 8</div>
+    </div>
+
+    <div class="conteudo">
+        <h1>🧮 Escolha a Operação</h1>
+
+        <div class="grid-menu">
+            <a href="{% url 'niveis_adicao' %}" class="card">
+                <span class="icone">+</span> Adição
+            </a>
+            <a href="{% url 'niveis_subtracao' %}" class="card">
+                <span class="icone">−</span> Subtração
+            </a>
+            <a href="{% url 'niveis_multiplicacao' %}" class="card">
+                <span class="icone">×</span> Multiplicação
+            </a>
+            <a href="{% url 'niveis_divisao' %}" class="card">
+                <span class="icone">÷</span> Divisão
+            </a>
+            <a href="{% url 'niveis_potenciacao' %}" class="card">
+                <span class="icone">x<sup>y</sup></span> Potenciação
+            </a>
+            <a href="#" class="card">
+                <span class="icone">√</span> Radiciação
+            </a>
+        </div>
+
+        <a href="{% url 'home' %}" class="btn-voltar">⬅️ Voltar para o Início</a>
+    </div>
+
+</body>
+</html>

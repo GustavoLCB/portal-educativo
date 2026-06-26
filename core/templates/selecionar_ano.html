@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecionar Ano - Portal Educativo</title>
+    <style>
+        body { background-color: #1e3f20; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+
+        .caixa { background-color: rgba(255,255,255,0.1); padding: 50px 40px; border-radius: 20px; box-shadow: 0 15px 25px rgba(0,0,0,0.5); backdrop-filter: blur(5px); border: 2px solid rgba(255,255,255,0.2); text-align: center; width: 100%; max-width: 600px; }
+
+        h1 { font-size: 2.2em; margin-top: 0; margin-bottom: 10px; font-family: 'Courier New', Courier, monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
+        .subtitulo { font-size: 1.1em; color: #ccc; margin-bottom: 40px; }
+
+        .grid-anos { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px; }
+
+        .btn-ano { background-color: rgba(255,255,255,0.1); border: 3px solid rgba(255,255,255,0.3); color: #fff; font-size: 1.1em; font-weight: bold; padding: 20px 15px; border-radius: 15px; cursor: pointer; transition: all 0.2s; width: 120px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; }
+        .btn-ano:hover { transform: scale(1.05); }
+
+        .btn-ano.ano-1 { border-color: #3498db; } .btn-ano.ano-1:hover { background-color: #3498db; }
+        .btn-ano.ano-2 { border-color: #9b59b6; } .btn-ano.ano-2:hover { background-color: #9b59b6; }
+        .btn-ano.ano-3 { border-color: #e67e22; } .btn-ano.ano-3:hover { background-color: #e67e22; }
+        .btn-ano.ano-4 { border-color: #27ae60; } .btn-ano.ano-4:hover { background-color: #27ae60; }
+        .btn-ano.ano-5 { border-color: #e74c3c; } .btn-ano.ano-5:hover { background-color: #e74c3c; }
+
+        .btn-ano .icone-ano { font-size: 2.5em; }
+        .btn-ano .label-ano { font-size: 1em; }
+        .btn-ano .sublabel { font-size: 0.75em; color: #bbb; font-weight: normal; }
+
+        .saudacao { font-size: 1.2em; color: #f1c40f; margin-bottom: 20px; }
+
+        @media (max-width: 500px) {
+            .btn-ano { width: 90px; padding: 15px 10px; font-size: 0.9em; }
+            .btn-ano .icone-ano { font-size: 2em; }
+            h1 { font-size: 1.7em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="caixa">
+        <h1>📚 Portal Educativo</h1>
+        <p class="saudacao">Olá, {{ nome }}! 👋</p>
+        <p class="subtitulo">Em qual ano você está estudando?</p>
+
+        <div class="grid-anos">
+            <a href="{% url 'definir_ano' %}?ano=1" class="btn-ano ano-1">
+                <span class="icone-ano">🌱</span>
+                <span class="label-ano">1º Ano</span>
+                <span class="sublabel">Fundamental</span>
+            </a>
+            <a href="{% url 'definir_ano' %}?ano=2" class="btn-ano ano-2">
+                <span class="icone-ano">🌿</span>
+                <span class="label-ano">2º Ano</span>
+                <span class="sublabel">Fundamental</span>
+            </a>
+            <a href="{% url 'definir_ano' %}?ano=3" class="btn-ano ano-3">
+                <span class="icone-ano">🌳</span>
+                <span class="label-ano">3º Ano</span>
+                <span class="sublabel">Fundamental</span>
+            </a>
+            <a href="{% url 'definir_ano' %}?ano=4" class="btn-ano ano-4">
+                <span class="icone-ano">⭐</span>
+                <span class="label-ano">4º Ano</span>
+                <span class="sublabel">Fundamental</span>
+            </a>
+            <a href="{% url 'definir_ano' %}?ano=5" class="btn-ano ano-5">
+                <span class="icone-ano">🚀</span>
+                <span class="label-ano">5º Ano</span>
+                <span class="sublabel">Fundamental</span>
+            </a>
+        </div>
+
+        <p style="color: #aaa; font-size: 0.9em;">Você pode trocar o ano a qualquer momento no painel principal.</p>
+    </div>
+</body>
+</html>

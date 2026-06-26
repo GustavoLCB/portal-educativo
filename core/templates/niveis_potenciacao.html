@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Níveis de Potenciação</title>
+    <style>
+        body { background-color: #1a1a2e; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 50px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; position: relative; }
+        .decoracao-giz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.08; font-size: 1.8em; color: #ffffff; pointer-events: none; user-select: none; padding: 20px; box-sizing: border-box; line-height: 2em; font-weight: bold; }
+        .giz-top-left { position: absolute; top: 40px; left: 40px; }
+        .giz-top-right { position: absolute; top: 40px; right: 40px; text-align: right; }
+        .conteudo { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 3em; margin-bottom: 10px; font-family: 'Courier New', Courier, monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
+        .subtitulo-pagina { font-size: 1em; color: #aaa; margin-bottom: 40px; font-style: italic; }
+        .grid-menu { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        .card { background-color: #e0e0e0; border-radius: 15px; padding: 30px; width: 200px; text-align: center; text-decoration: none; color: #222222; box-shadow: 5px 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s; border: 3px solid #b0b0b0; }
+        .card:hover { transform: scale(1.05); background-color: #eeeeee; }
+        .titulo { font-size: 1.5em; font-weight: bold; display: block; margin-bottom: 5px; color: #111; }
+        .subtitulo { font-size: 0.95em; color: #555; display: block; margin-bottom: 15px; }
+        .icone { font-size: 3em; display: block; color: #0056b3; }
+        .exemplo { font-size: 0.8em; color: #777; display: block; margin-top: 8px; font-family: 'Courier New', monospace; }
+
+        .card-quadrados  { border: 3px solid #2ecc71; }
+        .card-quadrados:hover  { background-color: #2ecc71; }
+        .card-cubos      { border: 3px solid #f1c40f; }
+        .card-cubos:hover      { background-color: #f1c40f; }
+        .card-potencias  { border: 3px solid #e74c3c; }
+        .card-potencias:hover  { background-color: #e74c3c; }
+
+        .btn-voltar { margin-top: 40px; background-color: #bdc3c7; color: #2c3e50; text-decoration: none; font-size: 1.1em; font-weight: bold; padding: 12px 30px; border-radius: 30px; box-shadow: 3px 3px 10px rgba(0,0,0,0.3); transition: background-color 0.2s, color 0.2s; border: 2px solid #95a5a6; }
+        .btn-voltar:hover { background-color: #ecf0f1; color: #000; }
+
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8em; margin-top: 50px; margin-bottom: 10px; }
+            .grid-menu { gap: 15px; justify-content: center; }
+            .card { width: 130px; padding: 20px 10px; font-size: 1em; }
+            .icone { font-size: 2.2em; margin-bottom: 10px; }
+            .decoracao-giz { font-size: 1.2em; opacity: 0.05; }
+            .btn-voltar { font-size: 0.85em; padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="decoracao-giz">
+        <div class="giz-top-left">2² = ?<br>3³ = ?</div>
+        <div class="giz-top-right">5² = ?<br>4² = ?</div>
+    </div>
+    <div class="conteudo">
+        <h1>⚡ Níveis de Potenciação</h1>
+        <p class="subtitulo-pagina">Escolha o nível de dificuldade</p>
+        <div class="grid-menu">
+
+            <a href="{% url 'jogo_tabuada' 'potenciacao' 'quadrados' %}" class="card card-quadrados">
+                <span class="titulo">Quadrados</span>
+                <span class="subtitulo">Foguete Iniciante</span>
+                <span class="icone">🚀</span>
+                <span class="exemplo">Ex: 2² · 3² · 5²</span>
+            </a>
+
+            <a href="{% url 'jogo_tabuada' 'potenciacao' 'cubos' %}" class="card card-cubos">
+                <span class="titulo">Cubos</span>
+                <span class="subtitulo">Nave Espacial</span>
+                <span class="icone">🛸</span>
+                <span class="exemplo">Ex: 2³ · 3³ · 4³</span>
+            </a>
+
+            <a href="{% url 'jogo_tabuada' 'potenciacao' 'potencias' %}" class="card card-potencias">
+                <span class="titulo">Potências</span>
+                <span class="subtitulo">Estação Espacial</span>
+                <span class="icone">🌌</span>
+                <span class="exemplo">Ex: 2⁴ · 3⁴ · 5³</span>
+            </a>
+
+        </div>
+        <a href="{% url 'matematica' %}" class="btn-voltar">⬅️ Voltar para Operações</a>
+    </div>
+</body>
+</html>

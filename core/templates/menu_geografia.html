@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nível 2 - Geografia</title>
+    <style>
+        body { background-color: #27ae60; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 50px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; position: relative; }
+        .barra-superior { position: absolute; top: 20px; right: 40px; display: flex; align-items: center; gap: 15px; z-index: 20; }
+        .btn-voltar { background-color: #2c3e50; color: white; text-decoration: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; border: 2px solid #1a252f; transition: 0.2s; }
+        h1 { font-size: 3em; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); text-align: center; }
+        .grid-menu { display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        .card { background-color: #e0e0e0; border-radius: 15px; padding: 35px 20px; width: 180px; text-align: center; text-decoration: none; color: #222222; font-size: 1.3em; font-weight: bold; box-shadow: 5px 5px 15px rgba(0,0,0,0.4); border: 3px solid #b0b0b0; display: flex; flex-direction: column; align-items: center;}
+        .card:hover { transform: scale(1.05); background-color: #eeeeee; }
+        .icone { font-size: 2.8em; margin-bottom: 15px; }
+        
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8em; margin-top: 50px; margin-bottom: 20px; }
+            .grid-menu { gap: 15px; justify-content: center; }
+            .card { width: 130px; padding: 20px 10px; font-size: 1em; }
+            .icone { font-size: 2.2em; margin-bottom: 10px; }
+            .barra-superior { right: 10px; top: 10px; }
+            .btn-voltar { font-size: 0.85em; padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="barra-superior">
+        <a href="{% url 'home' %}" class="btn-voltar">⬅ Voltar ao Painel</a>
+    </div>
+    <h1>🌍 Nível 2: Geografia</h1>
+    <div class="grid-menu">
+        <a href="{% url 'geografia_mapa' %}" class="card"><span class="icone">🗺️</span> Mapa do Brasil</a>
+        <a href="{% url 'geografia_quiz' %}" class="card"><span class="icone">🌾</span> Quiz Agricultura</a>
+        <a href="{% url 'geografia_extrativismo' %}" class="card"><span class="icone">⛏️</span> Extrativismo</a>
+        <a href="{% url 'geografia_pecuaria' %}" class="card"><span class="icone">🐄</span> Pecuária</a>
+        <a href="{% url 'geografia_espaco' %}" class="card"><span class="icone">📏</span> Tamanho do Espaço</a>
+        <a href="{% url 'geografia_paisagem' %}" class="card"><span class="icone">📸</span> Quiz Paisagens</a>
+    </div>
+</body>
+</html>

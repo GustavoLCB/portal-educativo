@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encontros Vocálicos</title>
+    <style>
+        /* ── FUNDO E BASE ── */
+        body { background-color: #2c1654; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; position: relative; }
+
+        /* ── DECORAÇÃO DE FUNDO ── */
+        .decoracao-giz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.06; font-size: 1.8em; color: #ffffff; pointer-events: none; user-select: none; padding: 20px; box-sizing: border-box; line-height: 2.5em; font-weight: bold; }
+        .giz-top-left  { position: absolute; top: 40px; left: 40px; }
+        .giz-top-right { position: absolute; top: 40px; right: 40px; text-align: right; }
+
+        /* ── CABEÇALHO ── */
+        .conteudo { position: relative; z-index: 10; width: 100%; max-width: 860px; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 2.4em; margin-bottom: 4px; font-family: 'Courier New', Courier, monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); text-align: center; }
+        .subtitulo-pagina { font-size: 0.95em; color: #ccc; margin-bottom: 20px; font-style: italic; }
+
+        /* ── PLACAR ── */
+        .placar { display: flex; gap: 30px; margin-bottom: 24px; }
+        .placar-item { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 24px; text-align: center; font-size: 1.1em; }
+        .placar-item span { display: block; font-size: 1.8em; font-weight: bold; }
+        .placar-item.acertos span { color: #2ecc71; }
+        .placar-item.erros   span { color: #e74c3c; }
+        .placar-item.total   span { color: #f1c40f; }
+
+        /* ── CARD DA QUESTÃO ── */
+        .card-questao { background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 30px 40px; width: 100%; max-width: 700px; text-align: center; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .numero-questao { font-size: 0.85em; color: #aaa; margin-bottom: 10px; }
+        .palavra-destaque { font-size: 3.2em; font-weight: bold; letter-spacing: 6px; color: #f8e71c; text-shadow: 0 0 20px rgba(248,231,28,0.4); font-family: 'Courier New', monospace; margin-bottom: 8px; }
+        .dica-tipo { font-size: 0.9em; color: #ccc; margin-bottom: 0; min-height: 20px; }
+
+        /* ── OPÇÕES ── */
+        .opcoes { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
+        .btn-opcao { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: #fff; font-size: 1em; font-weight: bold; padding: 14px 28px; border-radius: 50px; cursor: pointer; transition: all 0.2s; min-width: 160px; }
+        .btn-opcao:hover:not(:disabled) { background: rgba(255,255,255,0.2); transform: scale(1.04); }
+        .btn-opcao.certo  { background: #27ae60; border-color: #2ecc71; transform: scale(1.06); }
+        .btn-opcao.errado { background: #c0392b; border-color: #e74c3c; }
+        .btn-opcao:disabled { cursor: default; }
+
+        /* ── FEEDBACK ── */
+        .feedback { font-size: 1.3em; font-weight: bold; min-height: 36px; margin-bottom: 16px; transition: opacity 0.3s; }
+        .feedback.acertou { color: #2ecc71; }
+        .feedback.errou   { color: #e74c3c; }
+
+        /* ── EXPLICAÇÃO ── */
+        .explicacao { background: rgba(255,255,255,0.08); border-left: 4px solid #f8e71c; border-radius: 10px; padding: 12px 20px; font-size: 0.9em; color: #eee; margin-bottom: 20px; text-align: left; max-width: 600px; display: none; line-height: 1.6; }
+
+        /* ── BOTÃO PRÓXIMO ── */
+        .btn-proximo { background: #8e44ad; color: #fff; border: none; font-size: 1.1em; font-weight: bold; padding: 14px 40px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: background 0.2s, transform 0.2s; display: none; }
+        .btn-proximo:hover { background: #9b59b6; transform: scale(1.04); }
+
+        /* ── TELA FINAL ── */
+        .tela-final { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+        .tela-final h2 { font-size: 2.4em; }
+        .resultado-final { font-size: 1.4em; color: #f1c40f; }
+        .medalha { font-size: 5em; }
+        .btn-reiniciar { background: #27ae60; color: #fff; border: none; font-size: 1.1em; font-weight: bold; padding: 14px 40px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: background 0.2s; }
+        .btn-reiniciar:hover { background: #2ecc71; }
+
+        /* ── BARRA DE PROGRESSO ── */
+        .barra-wrap { width: 100%; max-width: 700px; background: rgba(255,255,255,0.1); border-radius: 20px; height: 10px; margin-bottom: 28px; overflow: hidden; }
+        .barra-prog { height: 100%; background: linear-gradient(90deg, #8e44ad, #f8e71c); border-radius: 20px; transition: width 0.4s ease; width: 0%; }
+
+        /* ── VOLTAR ── */
+        .btn-voltar { margin-top: 30px; background-color: #bdc3c7; color: #2c3e50; text-decoration: none; font-size: 1em; font-weight: bold; padding: 10px 28px; border-radius: 30px; box-shadow: 3px 3px 10px rgba(0,0,0,0.3); transition: background-color 0.2s; border: 2px solid #95a5a6; }
+        .btn-voltar:hover { background-color: #ecf0f1; color: #000; }
+
+        /* ── RESPONSIVO ── */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6em; }
+            .palavra-destaque { font-size: 2.2em; letter-spacing: 3px; }
+            .card-questao { padding: 20px 16px; }
+            .btn-opcao { min-width: 120px; padding: 12px 16px; font-size: 0.9em; }
+            .placar { gap: 12px; }
+            .placar-item { padding: 8px 14px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+<div class="decoracao-giz">
+    <div class="giz-top-left">PEIXE → Ditongo<br>SAÍDA → Hiato</div>
+    <div class="giz-top-right">CÉU → Ditongo<br>QUEIJO → Ditongo</div>
+</div>
+
+<div class="conteudo">
+    <h1>🔤 Encontros Vocálicos</h1>
+    <p class="subtitulo-pagina">Classifique cada palavra: Ditongo, Tritongo ou Hiato</p>
+
+    <!-- PLACAR -->
+    <div class="placar">
+        <div class="placar-item acertos">✅ Acertos<span id="qtd-acertos">0</span></div>
+        <div class="placar-item erros">❌ Erros<span id="qtd-erros">0</span></div>
+        <div class="placar-item total">📋 Total<span id="qtd-total">0</span></div>
+    </div>
+
+    <!-- BARRA DE PROGRESSO -->
+    <div class="barra-wrap"><div class="barra-prog" id="barra-prog"></div></div>
+
+    <!-- CARD DA QUESTÃO -->
+    <div class="card-questao" id="card-questao">
+        <p class="numero-questao" id="num-questao">Questão 1 de 10</p>
+        <div class="palavra-destaque" id="palavra-atual">—</div>
+        <p class="dica-tipo" id="dica-tipo"></p>
+    </div>
+
+    <!-- OPÇÕES -->
+    <div class="opcoes">
+        <button class="btn-opcao" onclick="responder('Ditongo')">🔵 Ditongo</button>
+        <button class="btn-opcao" onclick="responder('Tritongo')">🟡 Tritongo</button>
+        <button class="btn-opcao" onclick="responder('Hiato')">🔴 Hiato</button>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div class="feedback" id="feedback"></div>
+
+    <!-- EXPLICAÇÃO -->
+    <div class="explicacao" id="explicacao"></div>
+
+    <!-- PRÓXIMA -->
+    <button class="btn-proximo" id="btn-proximo" onclick="proximaQuestao()">Próxima ➡️</button>
+
+    <!-- TELA FINAL -->
+    <div class="tela-final" id="tela-final">
+        <div class="medalha" id="medalha-final">🏆</div>
+        <h2 id="titulo-final">Parabéns!</h2>
+        <p class="resultado-final" id="texto-resultado"></p>
+        <button class="btn-reiniciar" onclick="reiniciar()">🔄 Jogar Novamente</button>
+    </div>
+
+    <a href="{% url 'menu_portugues' %}" class="btn-voltar">⬅️ Voltar para Português</a>
+</div>
+
+<script>
+// ── BANCO DE QUESTÕES ──────────────────────────────────────────────────────
+const banco = [
+    // DITONGOS (duas vogais na mesma sílaba)
+    { palavra: 'PEIXE',     resposta: 'Ditongo',  explicacao: 'PE-I-XE → "EI" são duas vogais na mesma sílaba. Isso é um <strong>Ditongo</strong>!' },
+    { palavra: 'QUEIJO',    resposta: 'Ditongo',  explicacao: 'QUE-I-JO → "EI" são duas vogais juntas na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'LEITE',     resposta: 'Ditongo',  explicacao: 'LEI-TE → "EI" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'FEIJÃO',    resposta: 'Ditongo',  explicacao: 'FEI-JÃO → "EI" juntos formam um <strong>Ditongo</strong>.' },
+    { palavra: 'OURO',      resposta: 'Ditongo',  explicacao: 'OU-RO → "OU" são duas vogais na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'TESOURO',   resposta: 'Ditongo',  explicacao: 'TE-SOU-RO → "OU" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'COISA',     resposta: 'Ditongo',  explicacao: 'COI-SA → "OI" juntos na mesma sílaba formam um <strong>Ditongo</strong>.' },
+    { palavra: 'GAIVOTA',   resposta: 'Ditongo',  explicacao: 'GAI-VO-TA → "AI" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'CAIXA',     resposta: 'Ditongo',  explicacao: 'CAI-XA → "AI" juntos. <strong>Ditongo</strong>!' },
+    { palavra: 'MAMÃE',     resposta: 'Ditongo',  explicacao: 'MA-MÃE → "ÃE" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'PAPAI',     resposta: 'Ditongo',  explicacao: 'PA-PAI → "AI" na última sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'HERÓI',     resposta: 'Ditongo',  explicacao: 'HE-RÓI → "OI" juntos formam um <strong>Ditongo</strong>.' },
+    { palavra: 'CÉU',       resposta: 'Ditongo',  explicacao: 'CÉU → "EU" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'VÉU',       resposta: 'Ditongo',  explicacao: 'VÉU → "EU" juntos. <strong>Ditongo</strong>!' },
+    { palavra: 'SAIA',      resposta: 'Ditongo',  explicacao: 'SAI-A → "AI" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'MEIA',      resposta: 'Ditongo',  explicacao: 'MEI-A → "EI" juntos na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'REI',       resposta: 'Ditongo',  explicacao: 'REI → "EI" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'MAU',       resposta: 'Ditongo',  explicacao: 'MAU → "AU" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'MOEDA',     resposta: 'Ditongo',  explicacao: 'MOED-A → Atenção! "OE" aqui ficam em sílabas separadas (MO-E-DA). Isso é um <strong>Hiato</strong>!', resposta: 'Hiato' },
+    { palavra: 'MINGAU',    resposta: 'Ditongo',  explicacao: 'MIN-GAU → "AU" são duas vogais na mesma sílaba. Isso é um <strong>Ditongo</strong>!' },
+    { palavra: 'BAILE',     resposta: 'Ditongo',  explicacao: 'BAI-LE → "AI" são duas vogais juntas na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'ROUPA',     resposta: 'Ditongo',  explicacao: 'ROU-PA → "OU" na mesma sílaba. <strong>Ditongo</strong>!' },
+    { palavra: 'CORAÇÃO',   resposta: 'Ditongo',  explicacao: 'CO-RA-ÇÃO → "ÃO" são duas vogais na mesma sílaba. <strong>Ditongo</strong>!' },
+
+    // TRITONGOS (três vogais na mesma sílaba)
+    { palavra: 'URUGUAI',   resposta: 'Tritongo', explicacao: 'U-RU-GUAI → "UAI" são três vogais na mesma sílaba. Isso é um <strong>Tritongo</strong>!' },
+    { palavra: 'PARAGUAI',  resposta: 'Tritongo', explicacao: 'PA-RA-GUAI → "UAI" juntos formam um <strong>Tritongo</strong>!' },
+    { palavra: 'ENXAGUEI',  resposta: 'Tritongo', explicacao: 'EN-XA-GUEI → "UEI" são três vogais na mesma sílaba. <strong>Tritongo</strong>!' },
+    { palavra: 'SAGUÃO',    resposta: 'Tritongo', explicacao: 'SA-GUÃO → "UAO" juntos formam um <strong>Tritongo</strong>!' },
+    { palavra: 'QUAIS',     resposta: 'Tritongo', explicacao: 'QUAIS → "UAI" na mesma sílaba. <strong>Tritongo</strong>!' },
+    { palavra: 'PARAGUAI',  resposta: 'Tritongo', explicacao: 'PA-RA-GUAI → "UAI" são três vogais na mesma sílaba. Isso é um <strong>Tritongo</strong>!' },
+    { palavra: 'QUAIS',     resposta: 'Tritongo', explicacao: 'QUAIS → "UAI" são três vogais na mesma sílaba. <strong>Tritongo</strong>!' },
+    { palavra: 'ENXAGUEI',  resposta: 'Tritongo', explicacao: 'EN-XA-GUEI → "UEI" são três vogais na mesma sílaba. <strong>Tritongo</strong>!' },
+    { palavra: 'DESIGUAIS', resposta: 'Tritongo', explicacao: 'DE-SI-GUAIS → "UAI" são três vogais na mesma sílaba. <strong>Tritongo</strong>!' },
+
+    // HIATOS (duas vogais em sílabas separadas)
+    { palavra: 'SAÍDA',     resposta: 'Hiato',    explicacao: 'SA-Í-DA → "A" e "Í" ficam em sílabas separadas. Isso é um <strong>Hiato</strong>!' },
+    { palavra: 'SAÚDE',     resposta: 'Hiato',    explicacao: 'SA-Ú-DE → "A" e "Ú" em sílabas diferentes. <strong>Hiato</strong>!' },
+    { palavra: 'BAÚ',       resposta: 'Hiato',    explicacao: 'BA-Ú → "A" e "Ú" separados. <strong>Hiato</strong>!' },
+    { palavra: 'PAÍS',      resposta: 'Hiato',    explicacao: 'PA-ÍS → "A" e "Í" em sílabas diferentes. <strong>Hiato</strong>!' },
+    { palavra: 'FRIO',      resposta: 'Hiato',    explicacao: 'FRI-O → "I" e "O" ficam em sílabas separadas. <strong>Hiato</strong>!' },
+    { palavra: 'RUA',       resposta: 'Hiato',    explicacao: 'RU-A → "U" e "A" em sílabas separadas. <strong>Hiato</strong>!' },
+    { palavra: 'LUA',       resposta: 'Hiato',    explicacao: 'LU-A → "U" e "A" separados. <strong>Hiato</strong>!' },
+    { palavra: 'POEIRA',    resposta: 'Hiato',    explicacao: 'PO-EI-RA → "O" e "EI" ficam em sílabas diferentes. <strong>Hiato</strong>!' },
+    { palavra: 'COELHO',    resposta: 'Hiato',    explicacao: 'CO-E-LHO → "O" e "E" em sílabas separadas. <strong>Hiato</strong>!' },
+    { palavra: 'TEATRO',    resposta: 'Hiato',    explicacao: 'TE-A-TRO → "E" e "A" em sílabas diferentes. <strong>Hiato</strong>!' },
+    { palavra: 'IDEIA',     resposta: 'Hiato',    explicacao: 'I-DEI-A → "I" e "DEI" ficam separados. <strong>Hiato</strong>!' },
+    { palavra: 'CAIU',      resposta: 'Hiato',    explicacao: 'CA-IU → "A", "I" e "U" em sílabas separadas. <strong>Hiato</strong>!' },
+    { palavra: 'TRIO',      resposta: 'Hiato',    explicacao: 'TRI-O → "I" e "O" em sílabas diferentes. <strong>Hiato</strong>!' },
+    { palavra: 'HIATO',     resposta: 'Hiato',    explicacao: 'HI-A-TO → "I" e "A" ficam em sílabas separadas. Isso é um <strong>Hiato</strong>! (E a própria palavra já diz o nome!)' },
+    { palavra: 'SAÚDE',     resposta: 'Hiato',    explicacao: 'SA-Ú-DE → "A" e "Ú" ficam em sílabas diferentes. <strong>Hiato</strong>!' },
+    { palavra: 'JOELHO',    resposta: 'Hiato',    explicacao: 'JO-E-LHO → "O" e "E" ficam em sílabas separadas. <strong>Hiato</strong>!' },
+    { palavra: 'MOEDA',     resposta: 'Hiato',    explicacao: 'MO-E-DA → "O" e "E" ficam em sílabas diferentes. <strong>Hiato</strong>!' },
+    { palavra: 'RIACHO',    resposta: 'Hiato',    explicacao: 'RI-A-CHO → "I" e "A" ficam em sílabas separadas. <strong>Hiato</strong>!' },
+];
+
+// ── ESTADO DO JOGO ─────────────────────────────────────────────────────────
+let questoes = [];
+let indiceAtual = 0;
+let acertos = 0;
+let erros = 0;
+let respondeu = false;
+let tempoInicio = Date.now();
+let tempoInicioQuestao = Date.now();
+
+// ── INICIALIZAR ────────────────────────────────────────────────────────────
+function iniciar() {
+    questoes = embaralhar([...banco]).slice(0, 10);
+    indiceAtual = 0;
+    acertos = 0;
+    erros = 0;
+    respondeu = false;
+    tempoInicio = Date.now();
+    tempoInicioQuestao = Date.now();
+    document.getElementById('tela-final').style.display = 'none';
+    document.getElementById('card-questao').style.display = 'block';
+    document.querySelectorAll('.opcoes, .placar, .barra-wrap').forEach(el => el.style.display = '');
+    atualizarQuestao();
+}
+
+function embaralhar(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function atualizarQuestao() {
+    const q = questoes[indiceAtual];
+    respondeu = false;
+
+    document.getElementById('num-questao').textContent = `Questão ${indiceAtual + 1} de ${questoes.length}`;
+    document.getElementById('palavra-atual').textContent = q.palavra;
+    document.getElementById('dica-tipo').textContent = '';
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('explicacao').style.display = 'none';
+    document.getElementById('btn-proximo').style.display = 'none';
+
+    // barra de progresso
+    const pct = (indiceAtual / questoes.length) * 100;
+    document.getElementById('barra-prog').style.width = pct + '%';
+
+    // reativar botões
+    document.querySelectorAll('.btn-opcao').forEach(b => {
+        b.disabled = false;
+        b.className = 'btn-opcao';
+    });
+
+    atualizarPlacar();
+}
+
+function responder(opcaoEscolhida) {
+    if (respondeu) return;
+    respondeu = true;
+
+    const q = questoes[indiceAtual];
+    const correta = q.resposta;
+    const acertou = opcaoEscolhida === correta;
+
+    if (acertou) {
+        acertos++;
+        document.getElementById('feedback').textContent = '✅ Correto! Muito bem!';
+        document.getElementById('feedback').className = 'feedback acertou';
+    } else {
+        erros++;
+        document.getElementById('feedback').textContent = `❌ Errou! A resposta era: ${correta}`;
+        document.getElementById('feedback').className = 'feedback errou';
+    }
+
+    // colorir botões
+    document.querySelectorAll('.btn-opcao').forEach(b => {
+        b.disabled = true;
+        if (b.textContent.includes(correta)) b.classList.add('certo');
+        else if (b.textContent.includes(opcaoEscolhida) && !acertou) b.classList.add('errado');
+    });
+
+    // exibir explicação
+    const expEl = document.getElementById('explicacao');
+    expEl.innerHTML = '💡 ' + q.explicacao;
+    expEl.style.display = 'block';
+
+    atualizarPlacar();
+
+    // Salva esta questão individual no relatório
+    salvarQuestaoIndividual(q.palavra, acertou);
+
+    // mostrar botão próximo ou finalizar
+    if (indiceAtual < questoes.length - 1) {
+        document.getElementById('btn-proximo').style.display = 'inline-block';
+    } else {
+        setTimeout(mostrarFinal, 1200);
+    }
+}
+
+function salvarQuestaoIndividual(palavra, acertou) {
+    const tempoFimQuestao = Date.now();
+    const tempoQuestao = Math.floor((tempoFimQuestao - tempoInicioQuestao) / 1000);
+    tempoInicioQuestao = Date.now();
+
+    fetch('/salvar_jogada/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            operacao: 'portugues_encontros_vocalicos',
+            nivel: 'encontros_vocalicos_questao',
+            resposta_aluno: palavra,
+            acertou: acertou,
+            tempo_segundos: tempoQuestao
+        })
+    });
+}
+
+function proximaQuestao() {
+    indiceAtual++;
+    atualizarQuestao();
+}
+
+function atualizarPlacar() {
+    document.getElementById('qtd-acertos').textContent = acertos;
+    document.getElementById('qtd-erros').textContent = erros;
+    document.getElementById('qtd-total').textContent = indiceAtual + (respondeu ? 1 : 0);
+}
+
+function mostrarFinal() {
+    document.getElementById('card-questao').style.display = 'none';
+    document.querySelectorAll('.opcoes, .barra-wrap').forEach(el => el.style.display = 'none');
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('explicacao').style.display = 'none';
+    document.getElementById('btn-proximo').style.display = 'none';
+
+    const pct = Math.round((acertos / questoes.length) * 100);
+    let medalha = '🥉', titulo = 'Continue praticando!';
+    if (pct === 100) { medalha = '🏆'; titulo = 'Perfeito! Incrível!'; }
+    else if (pct >= 80) { medalha = '🥇'; titulo = 'Muito bem!'; }
+    else if (pct >= 60) { medalha = '🥈'; titulo = 'Bom trabalho!'; }
+
+    document.getElementById('medalha-final').textContent = medalha;
+    document.getElementById('titulo-final').textContent = titulo;
+    document.getElementById('texto-resultado').textContent =
+        `Você acertou ${acertos} de ${questoes.length} questões (${pct}%)`;
+
+    // barra final
+    document.getElementById('barra-prog').style.width = '100%';
+
+    const tela = document.getElementById('tela-final');
+    tela.style.display = 'flex';
+
+    // salva o resultado da rodada completa no relatório
+    const tempoFim = Date.now();
+    const tempoSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+    const rodadaPerfeita = (erros === 0);
+
+    fetch('/salvar_jogada/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            operacao: 'portugues_encontros_vocalicos',
+            nivel: 'encontros_vocalicos',
+            resposta_aluno: erros.toString(),
+            acertou: rodadaPerfeita,
+            tempo_segundos: tempoSegundos
+        })
+    });
+}
+
+function reiniciar() {
+    iniciar();
+}
+
+// ── INICIAR AO CARREGAR ────────────────────────────────────────────────────
+window.onload = iniciar;
+</script>
+</body>
+</html>

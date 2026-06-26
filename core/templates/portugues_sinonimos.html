@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Português - Sinónimos e Antónimos</title>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@3.0.0-rc.0/index.min.js"></script>
+    <style>
+        body { background-color: #d35400; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { font-size: 2.2em; color: #f1c40f; margin-bottom: 5px; margin-top: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        p { margin-top: 0; font-size: 1.1em; }
+        
+        .area-jogo { display: flex; justify-content: space-between; max-width: 1100px; margin: 20px auto; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 20px; gap: 30px; }
+        .caixa-palavras, .caixa-imagens { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 48%; }
+        
+        .palavra { background-color: #f39c12; padding: 10px; border-radius: 8px; font-size: 1.3em; font-weight: bold; cursor: grab; user-select: none; border: 3px solid #e67e22; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; height: 60px; box-sizing: border-box; touch-action: none; text-transform: uppercase; color: #2c3e50; }
+        .palavra:active { cursor: grabbing; transform: scale(1.05); }
+        .palavra.escondida { opacity: 0; pointer-events: none; }
+        
+        .zona-alvo { background-color: #ecf0f1; border: 3px dashed #bdc3c7; border-radius: 8px; padding: 5px; font-size: 1.3em; font-weight: bold; display: flex; align-items: center; justify-content: center; height: 60px; color: #2c3e50; transition: background-color 0.3s; box-sizing: border-box; text-transform: uppercase; }
+        .zona-alvo.drag-over { background-color: #f1c40f; border-color: #e67e22; }
+        .zona-alvo.correto { background-color: #2ecc71; border-color: #27ae60; color: white; }
+        
+        .placar { font-size: 1.5em; margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; display: inline-block; font-weight: bold; }
+        .texto-acertos { color: #f1c40f; margin-right: 20px; }
+        .texto-erros { color: #e74c3c; }
+        
+        .mensagem-vitoria { display: none; font-size: 1.8em; color: #f1c40f; margin-top: 15px; font-weight: bold; }
+        .btn-novo-jogo { display: none; background: #2c3e50; color: white; padding: 15px 30px; font-size: 1.2em; border: none; border-radius: 8px; cursor: pointer; margin: 15px auto; font-weight: bold; border: 3px solid #1a252f; }
+        
+        .btn-voltar { position: absolute; top: 15px; left: 15px; text-decoration: none; color: white; font-weight: bold; background: #2c3e50; padding: 10px 15px; border-radius: 8px; z-index: 100; }
+
+        /* AJUSTES UNIVERSAIS PARA CELULAR (RESPONSIVIDADE) */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            h1 { font-size: 1.6em; margin-top: 50px; margin-bottom: 15px; line-height: 1.2; }
+            .area-jogo { padding: 20px 10px; margin: 10px auto; width: 95%; box-sizing: border-box; }
+            .pergunta, .pergunta-container { font-size: 1.2em; line-height: 1.4; padding: 10px; text-align: center; }
+            .grid-opcoes, .opcoes { display: flex; flex-direction: column; gap: 10px; }
+            .btn-opcao { font-size: 1.1em; padding: 15px; width: 100%; box-sizing: border-box; }
+            .btn-voltar { font-size: 0.9em; top: 10px; left: 10px; padding: 8px 12px; position: absolute; }
+            .placar { font-size: 1.1em; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'menu_portugues' %}" class="btn-voltar">⬅ Voltar</a>
+
+    <h1>O Jogo dos Antónimos</h1>
+    <p>Arraste a palavra azulada para a caixa que significa o oposto!</p>
+
+    <div class="area-jogo">
+        <div class="caixa-palavras">
+            {% for par in palavras_arrastar %}
+                <div class="palavra" draggable="true" id="word-{{ forloop.counter }}" data-word="{{ par.palavra }}">{{ par.palavra }}</div>
+            {% endfor %}
+        </div>
+        <div class="caixa-imagens">
+            {% for par in palavras_alvo %}
+                <div class="zona-alvo" data-match="{{ par.palavra }}">
+                    {{ par.oposto }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="placar">
+        <span class="texto-acertos">Acertos: <span id="contador-acertos">0</span>/10</span>
+        <span class="texto-erros">Erros: <span id="contador-erros">0</span></span>
+    </div>
+
+    <div class="mensagem-vitoria" id="msg-vitoria">🎉 Brilhante! Você encontrou todos os pares! 🎉</div>
+    <button class="btn-novo-jogo" id="btn-novo" onclick="location.reload()">Jogar Novamente</button>
+
+    <script>
+        MobileDragDrop.polyfill({ holdToDrag: 100, dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride });
+        window.addEventListener('touchmove', function() {}, {passive: false});
+
+        const palavras = document.querySelectorAll('.palavra');
+        const zonas = document.querySelectorAll('.zona-alvo');
+        let acertos = 0;
+        let erros = 0;
+        let errosPorPar = {};
+        const totalItens = 10;
+        
+        const tempoInicio = Date.now();
+
+        palavras.forEach(palavra => {
+            palavra.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', e.target.dataset.word);
+                e.dataTransfer.setData('id', e.target.id);
+            });
+        });
+
+        zonas.forEach(zona => {
+            zona.addEventListener('dragover', (e) => { e.preventDefault(); zona.classList.add('drag-over'); });
+            zona.addEventListener('dragleave', () => { zona.classList.remove('drag-over'); });
+
+            zona.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zona.classList.remove('drag-over');
+                
+                const palavraArrastada = e.dataTransfer.getData('text/plain');
+                const palavraId = e.dataTransfer.getData('id');
+                const correspondenciaCorreta = zona.dataset.match;
+
+                if (palavraArrastada === correspondenciaCorreta) {
+                    zona.classList.add('correto');
+                    zona.innerHTML = palavraArrastada + " = " + zona.innerText + " ✔️";
+                    document.getElementById(palavraId).classList.add('escondida');
+                    
+                    acertos++;
+                    document.getElementById('contador-acertos').innerText = acertos;
+
+                    // Salva esta questão individual (acertou de primeira = sem erro neste par)
+                    const erroNesteParTemp = errosPorPar[palavraArrastada] || 0;
+                    salvarQuestaoIndividual(palavraArrastada, erroNesteParTemp === 0);
+                    
+                    if (acertos === totalItens) {
+                        document.getElementById('msg-vitoria').style.display = 'block';
+                        document.getElementById('btn-novo').style.display = 'block';
+                        
+                        const tempoFim = Date.now();
+                        const tempoSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+                        const rodadaPerfeita = (erros === 0);
+                        
+                        fetch('/salvar_jogada/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                operacao: 'portugues_sinonimos',
+                                nivel: 'antonimos',
+                                resposta_aluno: erros.toString(),
+                                acertou: rodadaPerfeita,
+                                tempo_segundos: tempoSegundos
+                            })
+                        });
+                    }
+                } else {
+                    zona.style.backgroundColor = '#e74c3c';
+                    setTimeout(() => zona.style.backgroundColor = '', 500);
+                    erros++;
+                    document.getElementById('contador-erros').innerText = erros;
+
+                    // Marca erro para a palavra que está sendo arrastada (vai contar quando ela acertar)
+                    if (palavraArrastada) {
+                        errosPorPar[palavraArrastada] = (errosPorPar[palavraArrastada] || 0) + 1;
+                    }
+                }
+            });
+        });
+
+        function salvarQuestaoIndividual(palavra, acertouDePrimeira) {
+            const tempoAgora = Date.now();
+            const tempoQuestao = Math.floor((tempoAgora - tempoInicio) / 1000);
+
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'portugues_sinonimos',
+                    nivel: 'antonimos_questao',
+                    resposta_aluno: palavra,
+                    acertou: acertouDePrimeira,
+                    tempo_segundos: tempoQuestao
+                })
+            });
+        }
+    </script>
+
+</body>
+</html>

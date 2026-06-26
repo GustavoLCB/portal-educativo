@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Português - Caçador de Sílabas</title>
+    <style>
+        body { background-color: #16a085; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { font-size: 2.2em; color: #f1c40f; margin-bottom: 5px; margin-top: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        
+        .area-jogo { max-width: 800px; margin: 20px auto; background: rgba(0,0,0,0.25); padding: 50px 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        
+        .palavra-container { font-size: 3.5em; font-weight: bold; margin-bottom: 50px; letter-spacing: 5px; font-family: 'Courier New', Courier, monospace; color: #ecf0f1; text-transform: uppercase; transition: all 0.3s; }
+        
+        .grid-opcoes { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        
+        .btn-opcao { background-color: #1abc9c; color: white; padding: 15px 30px; border-radius: 50%; font-size: 2em; font-weight: bold; cursor: pointer; border: 4px solid #16a085; transition: all 0.2s; box-shadow: 0 5px 0 #0e6655; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+        .btn-opcao:hover { transform: translateY(4px); box-shadow: 0 1px 0 #0e6655; background-color: #16a085; }
+        .btn-opcao.correto { background-color: #2ecc71; border-color: #27ae60; box-shadow: 0 5px 0 #219a52; }
+        .btn-opcao.errado { background-color: #e74c3c; border-color: #c0392b; box-shadow: 0 5px 0 #a93226; animation: tremer 0.3s; }
+        
+        @keyframes tremer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .placar { font-size: 1.5em; margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; display: inline-block; font-weight: bold; }
+        .texto-progresso { color: #f1c40f; margin-right: 20px; }
+        .texto-erros { color: #e74c3c; }
+        
+        .tela-fim { display: none; }
+        .tela-fim h2 { font-size: 3em; color: #f1c40f; }
+        .btn-novo-jogo { background: #3498db; color: white; padding: 15px 30px; font-size: 1.5em; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px; font-weight: bold; border: 4px solid #2980b9; }
+        
+        .btn-voltar { position: absolute; top: 15px; left: 15px; text-decoration: none; color: white; font-weight: bold; background: #2c3e50; padding: 10px 15px; border-radius: 8px; z-index: 100; }
+
+        /* AJUSTES UNIVERSAIS PARA CELULAR (RESPONSIVIDADE) */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            h1 { font-size: 1.6em; margin-top: 50px; margin-bottom: 15px; line-height: 1.2; }
+            .area-jogo { padding: 20px 10px; margin: 10px auto; width: 95%; box-sizing: border-box; }
+            .pergunta, .pergunta-container { font-size: 1.2em; line-height: 1.4; padding: 10px; text-align: center; }
+            .grid-opcoes, .opcoes { display: flex; flex-direction: column; gap: 10px; }
+            .btn-opcao { font-size: 1.1em; padding: 15px; width: 100%; box-sizing: border-box; }
+            .btn-voltar { font-size: 0.9em; top: 10px; left: 10px; padding: 8px 12px; position: absolute; }
+            .placar { font-size: 1.1em; width: 100%; display: flex; justify-content: space-around; box-sizing: border-box; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'menu_portugues' %}" class="btn-voltar">⬅ Voltar</a>
+
+    <h1>Caçador de Sílabas</h1>
+    <p>Quantas sílabas tem a palavra abaixo?</p>
+
+    <div class="area-jogo" id="tela-quiz">
+        <div class="palavra-container" id="palavra-display"></div>
+        <div class="grid-opcoes" id="opcoes-display"></div>
+    </div>
+
+    <div class="area-jogo tela-fim" id="tela-fim">
+        <h2>🎉 Desafio Concluído! 🎉</h2>
+        <button class="btn-novo-jogo" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+
+    <div class="placar">
+        <span class="texto-progresso">Palavra: <span id="contador-atual">1</span>/10</span>
+        <span class="texto-erros">Erros: <span id="contador-erros">0</span></span>
+    </div>
+
+    <script>
+        const palavrasData = {{ palavras_json|safe }};
+        let indiceAtual = 0;
+        let erros = 0;
+        let erroNestaQuestao = 0;
+        const totalPalavras = palavrasData.length;
+        const tempoInicio = Date.now();
+        let tempoInicioQuestao = Date.now();
+
+        const palavraDisplay = document.getElementById('palavra-display');
+        const opcoesDisplay = document.getElementById('opcoes-display');
+
+        function carregarPalavra() {
+            if (indiceAtual >= totalPalavras) {
+                finalizarJogo();
+                return;
+            }
+
+            const dadosAtuais = palavrasData[indiceAtual];
+            palavraDisplay.style.color = '#ecf0f1';
+            palavraDisplay.innerText = dadosAtuais.palavra;
+            
+            opcoesDisplay.innerHTML = '';
+            document.getElementById('contador-atual').innerText = indiceAtual + 1;
+
+            // Cria botões fixos de 1 a 5
+            const botoesPossiveis = [1, 2, 3, 4, 5];
+            
+            botoesPossiveis.forEach(numero => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-opcao';
+                btn.innerText = numero;
+                btn.onclick = () => verificarResposta(btn, numero, dadosAtuais.resposta, dadosAtuais.separacao);
+                opcoesDisplay.appendChild(btn);
+            });
+        }
+
+        function verificarResposta(botao, selecionada, correta, separacaoVisual) {
+            if (selecionada === correta) {
+                botao.classList.add('correto');
+                
+                // Animação de sucesso: revela como se separa a palavra!
+                palavraDisplay.style.color = '#f1c40f';
+                palavraDisplay.innerText = separacaoVisual;
+                
+                const todosBotoes = document.querySelectorAll('.btn-opcao');
+                todosBotoes.forEach(b => b.disabled = true);
+
+                salvarQuestaoIndividual(erroNestaQuestao === 0);
+                erroNestaQuestao = 0;
+
+                setTimeout(() => {
+                    indiceAtual++;
+                    carregarPalavra();
+                }, 1500);
+            } else {
+                botao.classList.add('errado');
+                setTimeout(() => botao.classList.remove('errado'), 400);
+                erros++;
+                erroNestaQuestao++;
+                document.getElementById('contador-erros').innerText = erros;
+            }
+        }
+
+        function salvarQuestaoIndividual(acertouDePrimeira) {
+            const tempoFimQuestao = Date.now();
+            const tempoQuestao = Math.floor((tempoFimQuestao - tempoInicioQuestao) / 1000);
+            tempoInicioQuestao = Date.now();
+
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'portugues_silabas',
+                    nivel: 'contagem_questao',
+                    resposta_aluno: palavrasData[indiceAtual].palavra,
+                    acertou: acertouDePrimeira,
+                    tempo_segundos: tempoQuestao
+                })
+            });
+        }
+
+        function finalizarJogo() {
+            document.getElementById('tela-quiz').style.display = 'none';
+            document.getElementById('tela-fim').style.display = 'block';
+            document.getElementById('contador-atual').innerText = totalPalavras;
+
+            const tempoFim = Date.now();
+            const tempoSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+            const rodadaPerfeita = (erros === 0);
+            
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'portugues_silabas',
+                    nivel: 'contagem',
+                    resposta_aluno: erros.toString(),
+                    acertou: rodadaPerfeita,
+                    tempo_segundos: tempoSegundos
+                })
+            });
+        }
+
+        carregarPalavra();
+    </script>
+
+</body>
+</html>

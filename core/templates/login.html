@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Portal Educativo</title>
+    <style>
+        body { background-color: #1e3f20; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .caixa-login { background-color: rgba(255, 255, 255, 0.1); padding: 40px 50px; border-radius: 20px; box-shadow: 0 15px 25px rgba(0,0,0,0.5); backdrop-filter: blur(5px); border: 2px solid rgba(255, 255, 255, 0.2); text-align: center; width: 100%; max-width: 400px; }
+        h1 { font-size: 2.5em; margin-top: 0; margin-bottom: 30px; font-family: 'Courier New', Courier, monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
+        .campo { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-size: 1.2em; font-weight: bold; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 15px; font-size: 1.2em; border-radius: 10px; border: none; box-sizing: border-box; background-color: #f0f0f0; color: #333; outline: none; }
+        input[type="text"]:focus, input[type="password"]:focus { border: 2px solid #00a8ff; background-color: #fff; }
+        button { width: 100%; background-color: #FF8C00; color: white; font-size: 1.5em; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.1s; margin-top: 10px; }
+        button:active { transform: scale(0.95); }
+        .erro { color: #ff6b6b; font-weight: bold; margin-bottom: 20px; background-color: rgba(255, 0, 0, 0.1); padding: 10px; border-radius: 8px; }
+        .link-cadastro { display: block; margin-top: 25px; color: #00a8ff; text-decoration: none; font-size: 1.1em; font-weight: bold; }
+        .link-cadastro:hover { text-decoration: underline; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="caixa-login">
+        <h1>🔐 Acesso</h1>
+        {% if erro %}<div class="erro">{{ erro }}</div>{% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="campo">
+                <label for="usuario">E-mail Escolar:</label>
+                <input type="text" id="usuario" name="usuario" placeholder="aluno@csanl.com.br" required autocomplete="off">
+            </div>
+            <div class="campo">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" name="senha" required>
+            </div>
+            <button type="submit">Entrar no Portal</button>
+        </form>
+        <a href="{% url 'registro' %}" class="link-cadastro">Primeiro acesso? Cadastre-se aqui</a>
+    </div>
+</body>
+</html>

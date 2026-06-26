@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dígrafos</title>
+    <style>
+        body { background-color: #1a3a4a; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; position: relative; }
+
+        .decoracao-giz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.06; font-size: 1.8em; color: #ffffff; pointer-events: none; user-select: none; padding: 20px; box-sizing: border-box; line-height: 2.5em; font-weight: bold; }
+        .giz-top-left  { position: absolute; top: 40px; left: 40px; }
+        .giz-top-right { position: absolute; top: 40px; right: 40px; text-align: right; }
+
+        .conteudo { position: relative; z-index: 10; width: 100%; max-width: 860px; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 2.4em; margin-bottom: 4px; font-family: 'Courier New', Courier, monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); text-align: center; }
+        .subtitulo-pagina { font-size: 0.95em; color: #ccc; margin-bottom: 20px; font-style: italic; text-align: center; }
+
+        /* LEGENDA */
+        .legenda { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+        .legenda-item { background: rgba(255,255,255,0.08); border-radius: 20px; padding: 6px 16px; font-size: 0.82em; color: #ddd; border: 1px solid rgba(255,255,255,0.15); }
+        .legenda-item strong { color: #f8e71c; }
+
+        /* PLACAR */
+        .placar { display: flex; gap: 30px; margin-bottom: 24px; }
+        .placar-item { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 24px; text-align: center; font-size: 1.1em; }
+        .placar-item span { display: block; font-size: 1.8em; font-weight: bold; }
+        .placar-item.acertos span { color: #2ecc71; }
+        .placar-item.erros   span { color: #e74c3c; }
+        .placar-item.total   span { color: #f1c40f; }
+
+        /* BARRA DE PROGRESSO */
+        .barra-wrap { width: 100%; max-width: 700px; background: rgba(255,255,255,0.1); border-radius: 20px; height: 10px; margin-bottom: 28px; overflow: hidden; }
+        .barra-prog { height: 100%; background: linear-gradient(90deg, #1a3a4a, #f8e71c); border-radius: 20px; transition: width 0.4s ease; width: 0%; }
+
+        /* CARD DA QUESTÃO */
+        .card-questao { background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 30px 40px; width: 100%; max-width: 700px; text-align: center; margin-bottom: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .numero-questao { font-size: 0.85em; color: #aaa; margin-bottom: 10px; }
+        .palavra-destaque { font-size: 3.2em; font-weight: bold; letter-spacing: 6px; color: #f8e71c; text-shadow: 0 0 20px rgba(248,231,28,0.4); font-family: 'Courier New', monospace; margin-bottom: 8px; }
+        .pergunta-texto { font-size: 1em; color: #ddd; margin-bottom: 0; }
+
+        /* AVISO MÚLTIPLOS */
+        .aviso-multiplos { background: rgba(248,231,28,0.15); border: 1px solid rgba(248,231,28,0.4); border-radius: 10px; padding: 8px 20px; font-size: 0.88em; color: #f8e71c; margin-bottom: 16px; max-width: 600px; text-align: center; display: none; }
+
+        /* OPÇÕES */
+        .opcoes { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; }
+        .btn-opcao { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: #fff; font-size: 1em; font-weight: bold; padding: 14px 28px; border-radius: 50px; cursor: pointer; transition: all 0.2s; min-width: 100px; }
+        .btn-opcao:hover:not(:disabled):not(.selecionado) { background: rgba(255,255,255,0.2); transform: scale(1.04); }
+        .btn-opcao.selecionado { background: #2980b9; border-color: #3498db; transform: scale(1.06); }
+        .btn-opcao.certo  { background: #27ae60; border-color: #2ecc71; }
+        .btn-opcao.errado { background: #c0392b; border-color: #e74c3c; }
+        .btn-opcao:disabled { cursor: default; }
+
+        /* BOTÃO CONFIRMAR */
+        .btn-confirmar { background: #8e44ad; color: #fff; border: none; font-size: 1em; font-weight: bold; padding: 12px 36px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: background 0.2s, transform 0.2s; margin-bottom: 16px; display: none; }
+        .btn-confirmar:hover { background: #9b59b6; transform: scale(1.04); }
+
+        /* FEEDBACK */
+        .feedback { font-size: 1.3em; font-weight: bold; min-height: 36px; margin-bottom: 16px; transition: opacity 0.3s; text-align: center; }
+        .feedback.acertou { color: #2ecc71; }
+        .feedback.errou   { color: #e74c3c; }
+        .feedback.parcial { color: #f39c12; }
+
+        /* EXPLICAÇÃO */
+        .explicacao { background: rgba(255,255,255,0.08); border-left: 4px solid #f8e71c; border-radius: 10px; padding: 12px 20px; font-size: 0.9em; color: #eee; margin-bottom: 20px; text-align: left; max-width: 600px; display: none; line-height: 1.6; }
+
+        /* PRÓXIMO */
+        .btn-proximo { background: #1a6a8a; color: #fff; border: none; font-size: 1.1em; font-weight: bold; padding: 14px 40px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: background 0.2s, transform 0.2s; display: none; }
+        .btn-proximo:hover { background: #2980b9; transform: scale(1.04); }
+
+        /* TELA FINAL */
+        .tela-final { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+        .tela-final h2 { font-size: 2.4em; }
+        .resultado-final { font-size: 1.4em; color: #f1c40f; }
+        .medalha { font-size: 5em; }
+        .btn-reiniciar { background: #27ae60; color: #fff; border: none; font-size: 1.1em; font-weight: bold; padding: 14px 40px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: background 0.2s; }
+        .btn-reiniciar:hover { background: #2ecc71; }
+
+        /* VOLTAR */
+        .btn-voltar { margin-top: 30px; background-color: #bdc3c7; color: #2c3e50; text-decoration: none; font-size: 1em; font-weight: bold; padding: 10px 28px; border-radius: 30px; box-shadow: 3px 3px 10px rgba(0,0,0,0.3); transition: background-color 0.2s; border: 2px solid #95a5a6; }
+        .btn-voltar:hover { background-color: #ecf0f1; color: #000; }
+
+        /* RESPONSIVO */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6em; }
+            .palavra-destaque { font-size: 2em; letter-spacing: 3px; }
+            .card-questao { padding: 20px 16px; }
+            .btn-opcao { min-width: 80px; padding: 12px 16px; font-size: 0.9em; }
+            .placar { gap: 12px; }
+            .placar-item { padding: 8px 14px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+<div class="decoracao-giz">
+    <div class="giz-top-left">CH → som de X<br>NH → som nasal</div>
+    <div class="giz-top-right">LH → palatal<br>RR → vibrante</div>
+</div>
+
+<div class="conteudo">
+    <h1>🔡 Dígrafos</h1>
+    <p class="subtitulo-pagina">Identifique o dígrafo presente em cada palavra<br><small>⚠️ Algumas palavras têm mais de um dígrafo — selecione todos!</small></p>
+
+    <!-- LEGENDA -->
+    <div class="legenda">
+        <div class="legenda-item">🔵 <strong>CH</strong> — chuva, chave</div>
+        <div class="legenda-item">🟣 <strong>LH</strong> — folha, palha</div>
+        <div class="legenda-item">🟡 <strong>NH</strong> — ninho, banho</div>
+        <div class="legenda-item">🔴 <strong>RR</strong> — carro, correu</div>
+        <div class="legenda-item">🟢 <strong>SS</strong> — pássaro, passarinho</div>
+    </div>
+
+    <!-- PLACAR -->
+    <div class="placar">
+        <div class="placar-item acertos">✅ Acertos<span id="qtd-acertos">0</span></div>
+        <div class="placar-item erros">❌ Erros<span id="qtd-erros">0</span></div>
+        <div class="placar-item total">📋 Total<span id="qtd-total">0</span></div>
+    </div>
+
+    <!-- BARRA DE PROGRESSO -->
+    <div class="barra-wrap"><div class="barra-prog" id="barra-prog"></div></div>
+
+    <!-- CARD DA QUESTÃO -->
+    <div class="card-questao" id="card-questao">
+        <p class="numero-questao" id="num-questao">Questão 1 de 10</p>
+        <div class="palavra-destaque" id="palavra-atual">—</div>
+        <p class="pergunta-texto" id="pergunta-texto">Qual é o dígrafo desta palavra?</p>
+    </div>
+
+    <!-- AVISO MÚLTIPLOS -->
+    <div class="aviso-multiplos" id="aviso-multiplos">
+        ⚠️ Esta palavra tem <strong id="qtd-digrafos"></strong> dígrafos! Selecione todos antes de confirmar.
+    </div>
+
+    <!-- OPÇÕES -->
+    <div class="opcoes" id="div-opcoes"></div>
+
+    <!-- CONFIRMAR -->
+    <button class="btn-confirmar" id="btn-confirmar" onclick="confirmarResposta()">✔️ Confirmar</button>
+
+    <!-- FEEDBACK -->
+    <div class="feedback" id="feedback"></div>
+
+    <!-- EXPLICAÇÃO -->
+    <div class="explicacao" id="explicacao"></div>
+
+    <!-- PRÓXIMA -->
+    <button class="btn-proximo" id="btn-proximo" onclick="proximaQuestao()">Próxima ➡️</button>
+
+    <!-- TELA FINAL -->
+    <div class="tela-final" id="tela-final">
+        <div class="medalha" id="medalha-final">🏆</div>
+        <h2 id="titulo-final">Parabéns!</h2>
+        <p class="resultado-final" id="texto-resultado"></p>
+        <button class="btn-reiniciar" onclick="reiniciar()">🔄 Jogar Novamente</button>
+    </div>
+
+    <a href="{% url 'menu_portugues' %}" class="btn-voltar">⬅️ Voltar para Português</a>
+</div>
+
+<script>
+// ── BANCO DE QUESTÕES ──────────────────────────────────────────────────────
+// 'resposta' é sempre um ARRAY — mesmo que seja só um dígrafo: ['CH']
+// Para múltiplos dígrafos: ['SS', 'NH']
+const banco = [
+    // CH
+    { palavra: 'CHUVA',      resposta: ['CH'], explicacao: '<strong>CH</strong>U-VA → "C" e "H" juntos formam um único som. <strong>Dígrafo CH</strong>!' },
+    { palavra: 'CHAPÉU',     resposta: ['CH'], explicacao: '<strong>CH</strong>A-PÉU → "CH" formam um único som. <strong>Dígrafo CH</strong>!' },
+    { palavra: 'CHAVE',      resposta: ['CH'], explicacao: '<strong>CH</strong>A-VE → "CH" juntos fazem um só som. <strong>Dígrafo CH</strong>!' },
+    { palavra: 'CHOCOLATE',  resposta: ['CH'], explicacao: '<strong>CH</strong>O-CO-LA-TE → "CH" formam um único som. <strong>Dígrafo CH</strong>!' },
+    { palavra: 'CHEIRO',     resposta: ['CH'], explicacao: '<strong>CH</strong>EI-RO → "CH" fazem um único som. <strong>Dígrafo CH</strong>!' },
+    { palavra: 'CHINELO',    resposta: ['CH'], explicacao: '<strong>CH</strong>I-NE-LO → "CH" formam um único som. <strong>Dígrafo CH</strong>!' },
+
+    // CH + RR (dois dígrafos!)
+    { palavra: 'CHURRASCO',  resposta: ['CH', 'RR'], explicacao: '<strong>CH</strong>UR-<strong>RR</strong>AS-CO → esta palavra tem DOIS dígrafos: "CH" no início e "RR" no meio!' },
+
+    // CH (repetido duas vezes, mas o dígrafo é só um tipo)
+    { palavra: 'CHUCHU',     resposta: ['CH'], explicacao: '<strong>CH</strong>U-<strong>CH</strong>U → o dígrafo "CH" aparece duas vezes na mesma palavra!' },
+
+    // LH
+    { palavra: 'FOLHA',      resposta: ['LH'], explicacao: 'FO-<strong>LH</strong>A → "L" e "H" juntos formam um único som palatal. <strong>Dígrafo LH</strong>!' },
+    { palavra: 'COELHO',     resposta: ['LH'], explicacao: 'CO-E-<strong>LH</strong>O → "LH" formam um único som. <strong>Dígrafo LH</strong>!' },
+    { palavra: 'PALHA',      resposta: ['LH'], explicacao: 'PA-<strong>LH</strong>A → "LH" fazem um único som. <strong>Dígrafo LH</strong>!' },
+    { palavra: 'GALHO',      resposta: ['LH'], explicacao: 'GA-<strong>LH</strong>O → "LH" juntos formam um único som. <strong>Dígrafo LH</strong>!' },
+    { palavra: 'MULHER',     resposta: ['LH'], explicacao: 'MU-<strong>LH</strong>ER → "LH" formam um único som palatal. <strong>Dígrafo LH</strong>!' },
+    { palavra: 'VELHO',      resposta: ['LH'], explicacao: 'VE-<strong>LH</strong>O → "LH" fazem um único som. <strong>Dígrafo LH</strong>!' },
+    { palavra: 'ESPELHO',    resposta: ['LH'], explicacao: 'ES-PE-<strong>LH</strong>O → "LH" formam um único som. <strong>Dígrafo LH</strong>!' },
+
+    // NH
+    { palavra: 'NINHO',      resposta: ['NH'], explicacao: 'NI-<strong>NH</strong>O → "N" e "H" juntos formam um único som nasal. <strong>Dígrafo NH</strong>!' },
+    { palavra: 'BANHO',      resposta: ['NH'], explicacao: 'BA-<strong>NH</strong>O → "NH" formam um único som nasal. <strong>Dígrafo NH</strong>!' },
+    { palavra: 'MINHA',      resposta: ['NH'], explicacao: 'MI-<strong>NH</strong>A → "NH" formam um único som nasal. <strong>Dígrafo NH</strong>!' },
+    { palavra: 'SONHO',      resposta: ['NH'], explicacao: 'SO-<strong>NH</strong>O → "NH" fazem um único som. <strong>Dígrafo NH</strong>!' },
+    { palavra: 'LINHA',      resposta: ['NH'], explicacao: 'LI-<strong>NH</strong>A → "NH" formam um único som nasal. <strong>Dígrafo NH</strong>!' },
+    { palavra: 'RAINHA',     resposta: ['NH'], explicacao: 'RA-I-<strong>NH</strong>A → "NH" fazem um único som nasal. <strong>Dígrafo NH</strong>!' },
+
+    // SS + NH (dois dígrafos!)
+    { palavra: 'PASSARINHO', resposta: ['SS', 'NH'], explicacao: 'PAS-SA-RI-<strong>NH</strong>O → esta palavra tem DOIS dígrafos: "SS" no meio e "NH" no final!' },
+
+    // SS
+    { palavra: 'PÁSSARO',    resposta: ['SS'], explicacao: 'PÁS-SA-RO → "S" e "S" juntos formam um único som. <strong>Dígrafo SS</strong>!' },
+    { palavra: 'OSSO',       resposta: ['SS'], explicacao: 'O-<strong>SS</strong>O → "SS" fazem um único som. <strong>Dígrafo SS</strong>!' },
+    { palavra: 'MASSA',      resposta: ['SS'], explicacao: 'MA-<strong>SS</strong>A → "SS" formam um único som. <strong>Dígrafo SS</strong>!' },
+    { palavra: 'GROSSO',     resposta: ['SS'], explicacao: 'GRO-<strong>SS</strong>O → "SS" fazem um único som. <strong>Dígrafo SS</strong>!' },
+    { palavra: 'ASSADO',     resposta: ['SS'], explicacao: 'A-<strong>SS</strong>A-DO → "SS" formam um único som. <strong>Dígrafo SS</strong>!' },
+    { palavra: 'PESSOAL',    resposta: ['SS'], explicacao: 'PE-<strong>SS</strong>O-AL → "SS" fazem um único som. <strong>Dígrafo SS</strong>!' },
+
+    // RR
+    { palavra: 'CARRO',      resposta: ['RR'], explicacao: 'CA-<strong>RR</strong>O → "R" e "R" juntos formam um único som vibrante forte. <strong>Dígrafo RR</strong>!' },
+    { palavra: 'CORREU',     resposta: ['RR'], explicacao: 'CO-<strong>RR</strong>EU → "RR" formam um único som. <strong>Dígrafo RR</strong>!' },
+    { palavra: 'TERRA',      resposta: ['RR'], explicacao: 'TE-<strong>RR</strong>A → "RR" fazem um único som vibrante. <strong>Dígrafo RR</strong>!' },
+    { palavra: 'FERRO',      resposta: ['RR'], explicacao: 'FE-<strong>RR</strong>O → "RR" formam um único som forte. <strong>Dígrafo RR</strong>!' },
+    { palavra: 'BORRÃO',     resposta: ['RR'], explicacao: 'BO-<strong>RR</strong>ÃO → "RR" fazem um único som vibrante. <strong>Dígrafo RR</strong>!' },
+    { palavra: 'CORRIDA',    resposta: ['RR'], explicacao: 'CO-<strong>RR</strong>I-DA → "RR" formam um único som. <strong>Dígrafo RR</strong>!' },
+    { palavra: 'SERRADO',    resposta: ['RR'], explicacao: 'SE-<strong>RR</strong>A-DO → "RR" fazem um único som vibrante forte. <strong>Dígrafo RR</strong>!' },
+];
+
+const todasOpcoes = ['CH', 'LH', 'NH', 'RR', 'SS'];
+
+// ── ESTADO DO JOGO ─────────────────────────────────────────────────────────
+let questoes       = [];
+let indiceAtual    = 0;
+let acertos        = 0;
+let erros          = 0;
+let respondeu      = false;
+let selecionados   = [];   // dígrafos que o aluno clicou
+let tempoInicio    = Date.now();
+let tempoInicioQuestao = Date.now();
+
+// ── INICIALIZAR ────────────────────────────────────────────────────────────
+function iniciar() {
+    questoes     = embaralhar([...banco]).slice(0, 10);
+    indiceAtual  = 0;
+    acertos      = 0;
+    erros        = 0;
+    respondeu    = false;
+    selecionados = [];
+    tempoInicio  = Date.now();
+    tempoInicioQuestao = Date.now();
+
+    document.getElementById('tela-final').style.display    = 'none';
+    document.getElementById('card-questao').style.display  = 'block';
+    document.getElementById('div-opcoes').style.display    = 'flex';
+    document.querySelector('.barra-wrap').style.display    = '';
+    document.querySelector('.placar').style.display        = 'flex';
+
+    atualizarQuestao();
+}
+
+function embaralhar(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function atualizarQuestao() {
+    const q    = questoes[indiceAtual];
+    respondeu  = false;
+    selecionados = [];
+
+    // textos
+    document.getElementById('num-questao').textContent    = `Questão ${indiceAtual + 1} de ${questoes.length}`;
+    document.getElementById('palavra-atual').textContent  = q.palavra;
+    document.getElementById('feedback').textContent       = '';
+    document.getElementById('feedback').className         = 'feedback';
+    document.getElementById('explicacao').style.display   = 'none';
+    document.getElementById('btn-proximo').style.display  = 'none';
+    document.getElementById('btn-confirmar').style.display = 'none';
+
+    // pergunta dinâmica
+    const multiplos = q.resposta.length > 1;
+    document.getElementById('pergunta-texto').textContent =
+        multiplos ? 'Quais são os dígrafos desta palavra? (selecione todos)' : 'Qual é o dígrafo desta palavra?';
+
+    // aviso múltiplos
+    const avisoEl = document.getElementById('aviso-multiplos');
+    if (multiplos) {
+        avisoEl.style.display = 'block';
+        document.getElementById('qtd-digrafos').textContent = q.resposta.length;
+    } else {
+        avisoEl.style.display = 'none';
+    }
+
+    // barra de progresso
+    document.getElementById('barra-prog').style.width = ((indiceAtual / questoes.length) * 100) + '%';
+
+    // montar botões
+    const divOpcoes = document.getElementById('div-opcoes');
+    divOpcoes.innerHTML = '';
+    todasOpcoes.forEach(opcao => {
+        const btn = document.createElement('button');
+        btn.className   = 'btn-opcao';
+        btn.textContent = opcao;
+        btn.id          = 'btn-' + opcao;
+        btn.onclick     = () => toggleOpcao(opcao, btn, multiplos);
+        divOpcoes.appendChild(btn);
+    });
+
+    atualizarPlacar();
+}
+
+// Clique num botão de opção
+function toggleOpcao(opcao, btn, multiplos) {
+    if (respondeu) return;
+
+    if (multiplos) {
+        // modo seleção múltipla — toggling
+        const idx = selecionados.indexOf(opcao);
+        if (idx === -1) {
+            selecionados.push(opcao);
+            btn.classList.add('selecionado');
+        } else {
+            selecionados.splice(idx, 1);
+            btn.classList.remove('selecionado');
+        }
+        // mostrar botão confirmar só quando algo estiver selecionado
+        document.getElementById('btn-confirmar').style.display =
+            selecionados.length > 0 ? 'inline-block' : 'none';
+    } else {
+        // modo resposta única — confirma na hora
+        selecionados = [opcao];
+        confirmarResposta();
+    }
+}
+
+// Confirmar resposta (chamado pelo botão ou automaticamente)
+function confirmarResposta() {
+    if (respondeu || selecionados.length === 0) return;
+    respondeu = true;
+
+    const q         = questoes[indiceAtual];
+    const corretos  = q.resposta;  // array com respostas certas
+    const acertouTudo = corretos.every(r => selecionados.includes(r)) &&
+                        selecionados.every(s => corretos.includes(s));
+    const acertouParcial = !acertouTudo &&
+                           corretos.some(r => selecionados.includes(r));
+
+    // feedback
+    const feedbackEl = document.getElementById('feedback');
+    if (acertouTudo) {
+        acertos++;
+        feedbackEl.textContent = corretos.length > 1
+            ? '✅ Perfeito! Você encontrou os dois dígrafos!'
+            : '✅ Correto! Muito bem!';
+        feedbackEl.className = 'feedback acertou';
+    } else if (acertouParcial) {
+        erros++;
+        feedbackEl.textContent = `⚠️ Quase! Você acertou parte. Os dígrafos eram: ${corretos.join(' e ')}`;
+        feedbackEl.className = 'feedback parcial';
+    } else {
+        erros++;
+        feedbackEl.textContent = `❌ Errou! O${corretos.length > 1 ? 's dígrafos eram' : ' dígrafo era'}: ${corretos.join(' e ')}`;
+        feedbackEl.className = 'feedback errou';
+    }
+
+    // colorir botões
+    document.querySelectorAll('.btn-opcao').forEach(b => {
+        b.disabled = true;
+        b.classList.remove('selecionado');
+        if (corretos.includes(b.textContent))          b.classList.add('certo');
+        else if (selecionados.includes(b.textContent)) b.classList.add('errado');
+    });
+
+    // esconder confirmar, mostrar explicação
+    document.getElementById('btn-confirmar').style.display = 'none';
+    const expEl = document.getElementById('explicacao');
+    expEl.innerHTML      = '💡 ' + q.explicacao;
+    expEl.style.display  = 'block';
+
+    atualizarPlacar();
+
+    // Salva esta questão individual no relatório (acerto parcial conta como erro)
+    salvarQuestaoIndividual(q.palavra, acertouTudo);
+
+    if (indiceAtual < questoes.length - 1) {
+        document.getElementById('btn-proximo').style.display = 'inline-block';
+    } else {
+        setTimeout(mostrarFinal, 1400);
+    }
+}
+
+function salvarQuestaoIndividual(palavra, acertou) {
+    const tempoFimQuestao = Date.now();
+    const tempoQuestao = Math.floor((tempoFimQuestao - tempoInicioQuestao) / 1000);
+    tempoInicioQuestao = Date.now();
+
+    fetch('/salvar_jogada/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            operacao: 'portugues_digrafo',
+            nivel: 'digrafos_questao',
+            resposta_aluno: palavra,
+            acertou: acertou,
+            tempo_segundos: tempoQuestao
+        })
+    });
+}
+
+function proximaQuestao() {
+    indiceAtual++;
+    atualizarQuestao();
+}
+
+function atualizarPlacar() {
+    document.getElementById('qtd-acertos').textContent = acertos;
+    document.getElementById('qtd-erros').textContent   = erros;
+    document.getElementById('qtd-total').textContent   = indiceAtual + (respondeu ? 1 : 0);
+}
+
+function mostrarFinal() {
+    document.getElementById('card-questao').style.display  = 'none';
+    document.getElementById('div-opcoes').style.display    = 'none';
+    document.getElementById('aviso-multiplos').style.display = 'none';
+    document.getElementById('feedback').textContent        = '';
+    document.getElementById('explicacao').style.display    = 'none';
+    document.getElementById('btn-proximo').style.display   = 'none';
+    document.getElementById('btn-confirmar').style.display = 'none';
+
+    const pct = Math.round((acertos / questoes.length) * 100);
+    let medalha = '🥉', titulo = 'Continue praticando!';
+    if (pct === 100)      { medalha = '🏆'; titulo = 'Perfeito! Incrível!'; }
+    else if (pct >= 80)   { medalha = '🥇'; titulo = 'Muito bem!'; }
+    else if (pct >= 60)   { medalha = '🥈'; titulo = 'Bom trabalho!'; }
+
+    document.getElementById('medalha-final').textContent   = medalha;
+    document.getElementById('titulo-final').textContent    = titulo;
+    document.getElementById('texto-resultado').textContent =
+        `Você acertou ${acertos} de ${questoes.length} questões (${pct}%)`;
+
+    document.getElementById('barra-prog').style.width = '100%';
+    document.getElementById('tela-final').style.display = 'flex';
+
+    // salva o resultado da rodada completa no relatório
+    const tempoFim = Date.now();
+    const tempoSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+    const rodadaPerfeita = (erros === 0);
+
+    fetch('/salvar_jogada/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            operacao: 'portugues_digrafo',
+            nivel: 'digrafos',
+            resposta_aluno: erros.toString(),
+            acertou: rodadaPerfeita,
+            tempo_segundos: tempoSegundos
+        })
+    });
+}
+
+function reiniciar() { iniciar(); }
+
+window.onload = iniciar;
+</script>
+</body>
+</html>

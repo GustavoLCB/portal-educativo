@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inglês - Complete a Frase</title>
+    <style>
+        body { background-color: #2c3e50; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { font-size: 2.2em; color: #f1c40f; margin-bottom: 5px; margin-top: 40px; }
+        
+        .area-jogo { max-width: 800px; margin: 20px auto; background: rgba(0,0,0,0.2); padding: 40px 20px; border-radius: 20px; }
+        
+        .emoji-destaque { font-size: 5em; margin-bottom: 20px; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+        .frase-container { font-size: 2.5em; font-weight: bold; margin-bottom: 40px; }
+        .lacuna { border-bottom: 4px solid white; display: inline-block; width: 150px; text-align: center; color: #f1c40f; }
+        
+        .grid-opcoes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        
+        .btn-opcao { background-color: #3498db; color: white; padding: 20px; border-radius: 12px; font-size: 1.5em; font-weight: bold; cursor: pointer; border: 4px solid #2980b9; transition: all 0.2s; }
+        .btn-opcao:hover { transform: scale(1.05); background-color: #2980b9; }
+        .btn-opcao.correto { background-color: #2ecc71; border-color: #27ae60; }
+        .btn-opcao.errado { background-color: #e74c3c; border-color: #c0392b; animation: tremer 0.3s; }
+        
+        @keyframes tremer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .placar { font-size: 1.5em; margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; display: inline-block; font-weight: bold; }
+        .texto-progresso { color: #3498db; margin-right: 20px; }
+        .texto-erros { color: #e74c3c; }
+        
+        .tela-fim { display: none; }
+        .tela-fim h2 { font-size: 3em; color: #2ecc71; }
+        .btn-novo-jogo { background: #e74c3c; color: white; padding: 15px 30px; font-size: 1.5em; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        
+        .btn-voltar { position: absolute; top: 15px; left: 15px; text-decoration: none; color: white; font-weight: bold; background: #34495e; padding: 10px 15px; border-radius: 8px; z-index: 100; }
+
+        /* ADAPTAÇÕES PARA CELULARES E TABLETS */
+        @media (max-width: 768px) {
+            .grid-opcoes { grid-template-columns: 1fr; gap: 15px; } /* Muda para 1 coluna vertical */
+            .frase-container { font-size: 1.6em; margin-bottom: 25px; }
+            .lacuna { width: 100px; }
+            .btn-opcao { font-size: 1.3em; padding: 15px; }
+            .emoji-destaque { font-size: 4em; min-height: 80px; }
+            h1 { font-size: 1.8em; margin-top: 50px; }
+            .placar { font-size: 1.2em; display: block; margin: 10px auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'home' %}" class="btn-voltar">⬅ Voltar</a>
+
+    <h1>Fill in the Blanks!</h1>
+    <p>Selecione a palavra correta para completar a frase.</p>
+
+    <div class="area-jogo" id="tela-quiz">
+        <div class="emoji-destaque" id="emoji-display"></div>
+        <div class="frase-container" id="frase-display"></div>
+        <div class="grid-opcoes" id="opcoes-display"></div>
+    </div>
+
+    <div class="area-jogo tela-fim" id="tela-fim">
+        <h2>🎉 Desafio Concluído! 🎉</h2>
+        <button class="btn-novo-jogo" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+
+    <div class="placar">
+        <span class="texto-progresso">Frase: <span id="contador-atual">1</span>/8</span>
+        <span class="texto-erros">Erros: <span id="contador-erros">0</span></span>
+    </div>
+
+    <script>
+        const frasesData = {{ frases_json|safe }};
+        let indiceAtual = 0;
+        let erros = 0;
+        const totalFrases = frasesData.length;
+        const tempoInicio = Date.now();
+
+        const emojiDisplay = document.getElementById('emoji-display');
+        const fraseDisplay = document.getElementById('frase-display');
+        const opcoesDisplay = document.getElementById('opcoes-display');
+
+        function carregarFrase() {
+            if (indiceAtual >= totalFrases) {
+                finalizarJogo();
+                return;
+            }
+
+            const dadosAtuais = frasesData[indiceAtual];
+            
+            if (dadosAtuais.is_image) {
+                emojiDisplay.innerHTML = `<img src="${dadosAtuais.emoji}" alt="Imagem do exercício" style="max-height: 100px; object-fit: contain;">`;
+            } else {
+                emojiDisplay.innerHTML = '';
+                emojiDisplay.innerText = dadosAtuais.emoji;
+            }
+            
+            fraseDisplay.innerHTML = dadosAtuais.frase.replace('______', '<span class="lacuna">______</span>');
+            
+            opcoesDisplay.innerHTML = '';
+            document.getElementById('contador-atual').innerText = indiceAtual + 1;
+
+            dadosAtuais.opcoes.forEach(opcao => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-opcao';
+                btn.innerText = opcao;
+                btn.onclick = () => verificarResposta(btn, opcao, dadosAtuais.resposta);
+                opcoesDisplay.appendChild(btn);
+            });
+        }
+
+        function verificarResposta(botao, selecionada, correta) {
+            if (selecionada === correta) {
+                botao.classList.add('correto');
+                fraseDisplay.innerHTML = frasesData[indiceAtual].frase.replace('______', `<span style="color:#2ecc71;">${correta}</span>`);
+                
+                const todosBotoes = document.querySelectorAll('.btn-opcao');
+                todosBotoes.forEach(b => b.disabled = true);
+
+                setTimeout(() => {
+                    indiceAtual++;
+                    carregarFrase();
+                }, 1200);
+            } else {
+                botao.classList.add('errado');
+                setTimeout(() => botao.classList.remove('errado'), 400);
+                erros++;
+                document.getElementById('contador-erros').innerText = erros;
+            }
+        }
+
+        function finalizarJogo() {
+            document.getElementById('tela-quiz').style.display = 'none';
+            document.getElementById('tela-fim').style.display = 'block';
+            document.getElementById('contador-atual').innerText = totalFrases;
+
+            const tempoFim = Date.now();
+            const tempoSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+            const rodadaPerfeita = (erros === 0);
+            
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'ingles_frases',
+                    nivel: 'frases',
+                    resposta_aluno: erros.toString(),
+                    acertou: rodadaPerfeita,
+                    tempo_segundos: tempoSegundos
+                })
+            });
+        }
+
+        carregarFrase();
+    </script>
+
+</body>
+</html>

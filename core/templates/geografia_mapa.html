@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinte as Regiões do Brasil</title>
+    <style>
+        body { background-color: #34495e; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #2ecc71; margin-top: 40px; font-size: 1.8em; }
+        p { font-size: 1.1em; }
+        
+        .area-jogo { width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; }
+        
+        .paleta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; width: 100%; }
+        .btn-cor { padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; border: 3px solid transparent; font-size: 1em; transition: 0.2s; color: white; }
+        .btn-cor.selecionada { transform: scale(1.1); border-color: white; box-shadow: 0 0 10px white; }
+        .btn-cor:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Cores das Regiões baseadas na sua folha */
+        #btn-norte { background-color: #27ae60; } /* Verde */
+        #btn-nordeste { background-color: #e74c3c; } /* Vermelho */
+        #btn-centro { background-color: #e67e22; } /* Laranja */
+        #btn-sudeste { background-color: #f1c40f; color: #333; } /* Amarelo */
+        #btn-sul { background-color: #8e44ad; } /* Roxo/Azul escuro */
+
+        .mapa-container { width: 100%; max-width: 500px; margin: 0 auto; background: #ecf0f1; border-radius: 15px; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        
+        svg { width: 100%; height: auto; }
+        .regiao { fill: #bdc3c7; stroke: #2c3e50; stroke-width: 2; cursor: pointer; transition: fill 0.3s; }
+        .regiao:hover { fill: #95a5a6; }
+        
+        .btn-voltar { position: absolute; top: 10px; left: 10px; background: #2c3e50; color: white; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; border: 2px solid #1a252f; font-size: 0.9em; }
+
+        .tela-fim { display: none; margin-top: 20px; }
+        .tela-fim h2 { color: #f1c40f; font-size: 2em; }
+        .btn-novo-jogo { background: #e74c3c; color: white; padding: 10px 20px; font-size: 1.2em; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'menu_geografia' %}" class="btn-voltar">⬅ Voltar</a>
+
+    <h1>Pinte as Regiões do Brasil 🗺️</h1>
+    <p>1º Toque no nome da região. 2º Toque no mapa para pintar!</p>
+
+    <div class="area-jogo" id="jogo">
+        <div class="paleta">
+            <button class="btn-cor" id="btn-norte" onclick="selecionarCor('norte', '#27ae60', this)">Norte</button>
+            <button class="btn-cor" id="btn-nordeste" onclick="selecionarCor('nordeste', '#e74c3c', this)">Nordeste</button>
+            <button class="btn-cor" id="btn-centro" onclick="selecionarCor('centro', '#e67e22', this)">Centro-Oeste</button>
+            <button class="btn-cor" id="btn-sudeste" onclick="selecionarCor('sudeste', '#f1c40f', this)">Sudeste</button>
+            <button class="btn-cor" id="btn-sul" onclick="selecionarCor('sul', '#8e44ad', this)">Sul</button>
+        </div>
+
+        <div class="mapa-container">
+            <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                <path id="regiao-norte" class="regiao" onclick="pintarRegiao('norte')" d="M120,50 L250,30 L320,100 L300,200 L180,220 L50,180 Z" />
+                <path id="regiao-nordeste" class="regiao" onclick="pintarRegiao('nordeste')" d="M320,100 L480,150 L450,280 L350,250 L300,200 Z" />
+                <path id="regiao-centro" class="regiao" onclick="pintarRegiao('centro')" d="M180,220 L300,200 L350,250 L320,350 L200,320 Z" />
+                <path id="regiao-sudeste" class="regiao" onclick="pintarRegiao('sudeste')" d="M350,250 L450,280 L400,380 L320,350 Z" />
+                <path id="regiao-sul" class="regiao" onclick="pintarRegiao('sul')" d="M200,320 L320,350 L400,380 L300,480 L220,400 Z" />
+                
+                
+            </svg>
+        </div>
+    </div>
+
+    <div class="tela-fim" id="tela-fim">
+        <h2>🎉 Mapa Completo! 🎉</h2>
+        <button class="btn-novo-jogo" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+
+    <script>
+        let regiaoSelecionada = null;
+        let corSelecionada = null;
+        let botaoAtivo = null;
+        let acertos = 0;
+
+        function selecionarCor(regiaoAlvo, cor, elementoBotao) {
+            regiaoSelecionada = regiaoAlvo;
+            corSelecionada = cor;
+            
+            // Remove destaque dos outros botões
+            document.querySelectorAll('.btn-cor').forEach(btn => btn.classList.remove('selecionada'));
+            
+            // Adiciona destaque no clicado
+            elementoBotao.classList.add('selecionada');
+            botaoAtivo = elementoBotao;
+        }
+
+        function pintarRegiao(regiaoClicada) {
+            if (!regiaoSelecionada) {
+                alert("Primeiro escolha uma lata de tinta lá em cima!");
+                return;
+            }
+
+            if (regiaoClicada === regiaoSelecionada) {
+                // Acertou! Pinta o mapa
+                document.getElementById('regiao-' + regiaoClicada).style.fill = corSelecionada;
+                document.getElementById('regiao-' + regiaoClicada).style.pointerEvents = 'none'; // Não clica mais
+                
+                // Desativa o botão
+                botaoAtivo.disabled = true;
+                botaoAtivo.classList.remove('selecionada');
+                
+                regiaoSelecionada = null;
+                acertos++;
+
+                if (acertos === 5) {
+                    setTimeout(() => {
+                        document.getElementById('jogo').style.display = 'none';
+                        document.getElementById('tela-fim').style.display = 'block';
+                    }, 500);
+                }
+            } else {
+                alert("Opa! Essa não é a região " + botaoAtivo.innerText + ". Tente de novo!");
+            }
+        }
+    </script>
+</body>
+</html>

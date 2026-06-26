@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Português - Desafio da Ortografia</title>
+    <style>
+        body { background-color: #27ae60; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { font-size: 2.2em; color: #f1c40f; margin-bottom: 5px; margin-top: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        
+        .area-jogo { max-width: 800px; margin: 20px auto; background: rgba(0,0,0,0.25); padding: 40px 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        
+        .palavra-container { font-size: 3em; font-weight: bold; margin-bottom: 40px; letter-spacing: 5px; font-family: 'Courier New', Courier, monospace; }
+        .lacuna { border-bottom: 5px solid white; display: inline-block; min-width: 60px; text-align: center; color: #f1c40f; }
+        
+        .grid-opcoes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        
+        .btn-opcao { background-color: #f39c12; color: white; padding: 20px; border-radius: 12px; font-size: 2em; font-weight: bold; cursor: pointer; border: 4px solid #e67e22; transition: all 0.2s; box-shadow: 0 5px 0 #d35400; }
+        .btn-opcao:hover { transform: translateY(4px); box-shadow: 0 1px 0 #d35400; }
+        .btn-opcao.correto { background-color: #2ecc71; border-color: #27ae60; box-shadow: 0 5px 0 #219a52; }
+        .btn-opcao.errado { background-color: #e74c3c; border-color: #c0392b; box-shadow: 0 5px 0 #a93226; animation: tremer 0.3s; }
+        
+        @keyframes tremer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .placar { font-size: 1.5em; margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; display: inline-block; font-weight: bold; }
+        .texto-progresso { color: #f1c40f; margin-right: 20px; }
+        .texto-erros { color: #e74c3c; }
+        
+        .tela-fim { display: none; }
+        .tela-fim h2 { font-size: 3em; color: #f1c40f; }
+        .btn-novo-jogo { background: #3498db; color: white; padding: 15px 30px; font-size: 1.5em; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px; font-weight: bold; border: 4px solid #2980b9; }
+        
+        .btn-voltar { position: absolute; top: 15px; left: 15px; text-decoration: none; color: white; font-weight: bold; background: #2c3e50; padding: 10px 15px; border-radius: 8px; z-index: 100; }
+
+        @media (max-width: 768px) {
+            .grid-opcoes { grid-template-columns: 1fr; gap: 15px; } 
+            .palavra-container { font-size: 2em; letter-spacing: 2px; }
+            .lacuna { min-width: 40px; }
+            .btn-opcao { font-size: 1.5em; padding: 15px; }
+            h1 { font-size: 1.8em; margin-top: 50px; }
+            .placar { font-size: 1.2em; display: block; margin: 10px auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="{% url 'home' %}" class="btn-voltar">⬅ Voltar</a>
+
+    <h1>Ortografia: Qual é a letra?</h1>
+    <p>Complete a palavra com a opção correta.</p>
+
+    <div class="area-jogo" id="tela-quiz">
+        <div class="palavra-container" id="palavra-display"></div>
+        <div class="grid-opcoes" id="opcoes-display"></div>
+    </div>
+
+    <div class="area-jogo tela-fim" id="tela-fim">
+        <h2>🎉 Desafio Concluído! 🎉</h2>
+        <button class="btn-novo-jogo" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+
+    <div class="placar">
+        <span class="texto-progresso">Palavra: <span id="contador-atual">1</span>/10</span>
+        <span class="texto-erros">Erros: <span id="contador-erros">0</span></span>
+    </div>
+
+    <script>
+        const palavrasData = {{ palavras_json|safe }};
+        let indiceAtual = 0;
+        let erros = 0;
+        let erroNestaQuestao = 0;
+        const totalPalavras = palavrasData.length;
+        const tempoInicio = Date.now();
+        let tempoInicioQuestao = Date.now();
+
+        const palavraDisplay = document.getElementById('palavra-display');
+        const opcoesDisplay = document.getElementById('opcoes-display');
+
+        function carregarPalavra() {
+            if (indiceAtual >= totalPalavras) {
+                finalizarJogo();
+                return;
+            }
+
+            const dadosAtuais = palavrasData[indiceAtual];
+            palavraDisplay.innerHTML = dadosAtuais.palavra.replace('___', '<span class="lacuna"></span>');
+            
+            opcoesDisplay.innerHTML = '';
+            document.getElementById('contador-atual').innerText = indiceAtual + 1;
+
+            dadosAtuais.opcoes.forEach(opcao => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-opcao';
+                btn.innerText = opcao;
+                btn.onclick = () => verificarResposta(btn, opcao, dadosAtuais.resposta);
+                opcoesDisplay.appendChild(btn);
+            });
+        }
+
+        function verificarResposta(botao, selecionada, correta) {
+            if (selecionada === correta) {
+                botao.classList.add('correto');
+                palavraDisplay.innerHTML = palavrasData[indiceAtual].palavra.replace('___', `<span style="color:#f1c40f;">${correta}</span>`);
+                
+                const todosBotoes = document.querySelectorAll('.btn-opcao');
+                todosBotoes.forEach(b => b.disabled = true);
+
+                // Salva o resultado desta questão individual (acertou = não errou nenhuma vez antes)
+                salvarQuestaoIndividual(erroNestaQuestao === 0);
+                erroNestaQuestao = 0;
+
+                setTimeout(() => {
+                    indiceAtual++;
+                    carregarPalavra();
+                }, 1000);
+            } else {
+                botao.classList.add('errado');
+                setTimeout(() => botao.classList.remove('errado'), 400);
+                erros++;
+                erroNestaQuestao++;
+                document.getElementById('contador-erros').innerText = erros;
+            }
+        }
+
+        function salvarQuestaoIndividual(acertouDePrimeira) {
+            const tempoFimQuestao = Date.now();
+            const tempoQuestao = Math.floor((tempoFimQuestao - tempoInicioQuestao) / 1000);
+            tempoInicioQuestao = Date.now();
+
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'portugues_ortografia',
+                    nivel: 'ortografia_questao',
+                    resposta_aluno: palavrasData[indiceAtual].palavra,
+                    acertou: acertouDePrimeira,
+                    tempo_segundos: tempoQuestao
+                })
+            });
+        }
+
+        function finalizarJogo() {
+            document.getElementById('tela-quiz').style.display = 'none';
+            document.getElementById('tela-fim').style.display = 'block';
+            document.getElementById('contador-atual').innerText = totalPalavras;
+
+            const tempoFim = Date.now();
+            const tempoSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+            const rodadaPerfeita = (erros === 0);
+            
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'portugues_ortografia', // Identificador pro relatório
+                    nivel: 'ortografia',
+                    resposta_aluno: erros.toString(),
+                    acertou: rodadaPerfeita,
+                    tempo_segundos: tempoSegundos
+                })
+            });
+        }
+
+        carregarPalavra();
+    </script>
+
+</body>
+</html>

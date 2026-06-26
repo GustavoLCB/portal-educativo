@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Município é de Todos</title>
+    <style>
+        body { background-color: #1a5276; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; margin: 0; }
+        h1 { font-size: 2.2em; color: #f1c40f; margin-bottom: 5px; margin-top: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .area-jogo { max-width: 900px; margin: 20px auto; background: rgba(0,0,0,0.25); padding: 40px 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .pergunta-container { font-size: 1.5em; line-height: 1.5; margin-bottom: 30px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; }
+        .grid-opcoes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .btn-opcao { background-color: #2980b9; color: white; padding: 18px; border-radius: 12px; font-size: 1.2em; font-weight: bold; cursor: pointer; border: 4px solid #1a6fa8; transition: all 0.2s; }
+        .btn-opcao:hover { transform: scale(1.03); background-color: #1a6fa8; }
+        .btn-opcao.correto { background-color: #2ecc71; border-color: #27ae60; }
+        .btn-opcao.errado { background-color: #e74c3c; border-color: #c0392b; animation: tremer 0.3s; }
+        @keyframes tremer { 0%,100% { transform: translateX(0); } 25%,75% { transform: translateX(-8px); } 50% { transform: translateX(8px); } }
+        .placar { font-size: 1.4em; margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; display: inline-block; font-weight: bold; }
+        .texto-progresso { color: #f1c40f; margin-right: 20px; }
+        .texto-erros { color: #e74c3c; }
+        .tela-fim { display: none; }
+        .tela-fim h2 { font-size: 2.5em; color: #f1c40f; }
+        .btn-novo-jogo { background: #27ae60; color: white; padding: 14px 30px; font-size: 1.3em; border: none; border-radius: 10px; cursor: pointer; margin-top: 15px; font-weight: bold; border: 3px solid #219a52; }
+        .btn-voltar { position: absolute; top: 15px; left: 15px; text-decoration: none; color: white; font-weight: bold; background: #2c3e50; padding: 10px 15px; border-radius: 8px; z-index: 100; }
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            h1 { font-size: 1.5em; margin-top: 55px; }
+            .area-jogo { padding: 15px 10px; }
+            .pergunta-container { font-size: 1.1em; padding: 15px; margin-bottom: 20px; }
+            .grid-opcoes { grid-template-columns: 1fr; gap: 10px; }
+            .btn-opcao { font-size: 1em; padding: 14px; }
+            .placar { font-size: 1em; display: flex; justify-content: space-around; width: 100%; box-sizing: border-box; }
+            .texto-progresso { margin-right: 0; }
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'menu_historia' %}" class="btn-voltar">⬅ Voltar</a>
+    <h1>🏛️ O Município é de Todos</h1>
+    <p>Leia a pergunta e escolha a resposta correta!</p>
+    <div class="area-jogo" id="tela-quiz">
+        <div class="pergunta-container" id="pergunta-display"></div>
+        <div class="grid-opcoes" id="opcoes-display"></div>
+    </div>
+    <div class="area-jogo tela-fim" id="tela-fim">
+        <h2>🎉 Muito bem! 🎉</h2>
+        <button class="btn-novo-jogo" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+    <div class="placar">
+        <span class="texto-progresso">Questão: <span id="contador-atual">1</span>/<span id="total-questoes"></span></span>
+        <span class="texto-erros">Erros: <span id="contador-erros">0</span></span>
+    </div>
+    <script>
+        const questoesData = {{ questoes_json|safe }};
+        let indiceAtual = 0, erros = 0, erroNestaQuestao = 0;
+        const totalQuestoes = questoesData.length;
+        const tempoInicio = Date.now();
+        let tempoInicioQuestao = Date.now();
+
+        document.getElementById('total-questoes').innerText = totalQuestoes;
+
+        function carregarQuestao() {
+            if (indiceAtual >= totalQuestoes) { finalizarJogo(); return; }
+            const q = questoesData[indiceAtual];
+            document.getElementById('pergunta-display').innerHTML = `<strong>${q.pergunta}</strong>`;
+            document.getElementById('opcoes-display').innerHTML = '';
+            document.getElementById('contador-atual').innerText = indiceAtual + 1;
+            q.opcoes.forEach(opcao => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-opcao';
+                btn.innerText = opcao;
+                btn.onclick = () => verificarResposta(btn, opcao, q.resposta);
+                document.getElementById('opcoes-display').appendChild(btn);
+            });
+        }
+
+        function verificarResposta(botao, selecionada, correta) {
+            if (selecionada === correta) {
+                botao.classList.add('correto');
+                document.querySelectorAll('.btn-opcao').forEach(b => b.disabled = true);
+                salvarQuestao(erroNestaQuestao === 0);
+                erroNestaQuestao = 0;
+                setTimeout(() => { indiceAtual++; carregarQuestao(); }, 1200);
+            } else {
+                botao.classList.add('errado');
+                setTimeout(() => botao.classList.remove('errado'), 400);
+                erros++; erroNestaQuestao++;
+                document.getElementById('contador-erros').innerText = erros;
+            }
+        }
+
+        function salvarQuestao(acertou) {
+            const tempo = Math.floor((Date.now() - tempoInicioQuestao) / 1000);
+            tempoInicioQuestao = Date.now();
+            fetch('/salvar_jogada/', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operacao: 'historia_municipio', nivel: 'municipio_questao',
+                    resposta_aluno: String(indiceAtual), acertou: acertou, tempo_segundos: tempo })
+            });
+        }
+
+        function finalizarJogo() {
+            document.getElementById('tela-quiz').style.display = 'none';
+            document.getElementById('tela-fim').style.display = 'block';
+            fetch('/salvar_jogada/', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operacao: 'historia_municipio', nivel: 'municipio_rodada',
+                    resposta_aluno: String(erros), acertou: erros === 0,
+                    tempo_segundos: Math.floor((Date.now() - tempoInicio) / 1000) })
+            });
+        }
+
+        carregarQuestao();
+    </script>
+</body>
+</html>

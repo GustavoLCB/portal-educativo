@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Educativo</title>
+    <style>
+        body { background-color: #1e3f20; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 50px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; position: relative; }
+        .decoracao-giz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.08; font-size: 1.8em; color: #ffffff; pointer-events: none; user-select: none; padding: 20px; box-sizing: border-box; line-height: 2em; font-weight: bold; }
+        .giz-top-left { position: absolute; top: 40px; left: 40px; } .giz-top-right { position: absolute; top: 40px; right: 40px; text-align: right; }
+        .giz-bottom-left { position: absolute; bottom: 40px; left: 40px; } .giz-bottom-right { position: absolute; bottom: 40px; right: 40px; text-align: right; }
+        
+        .barra-superior { position: absolute; top: 20px; right: 40px; display: flex; align-items: center; gap: 15px; z-index: 20; }
+        .saudacao { font-size: 1.2em; font-weight: bold; }
+        .btn-sair { background-color: #e74c3c; color: white; text-decoration: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; border: 2px solid #c0392b; transition: 0.2s; }
+        .btn-sair:hover { background-color: #c0392b; }
+
+        .conteudo { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; margin-top: 30px; }
+        h1 { font-size: 3em; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); font-family: 'Courier New', Courier, monospace; text-align: center; }
+        .grid-menu { display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        .card { background-color: #e0e0e0; border-radius: 15px; padding: 35px; width: 180px; text-align: center; text-decoration: none; color: #222222; font-size: 1.4em; font-weight: bold; box-shadow: 5px 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s; border: 3px solid #b0b0b0; }
+        .card:hover { transform: scale(1.05); background-color: #eeeeee; }
+        .icone { font-size: 2.8em; display: block; margin-bottom: 15px; color: #0056b3; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2)); }
+        
+
+        .badge-ano { background-color: #f1c40f; color: #222; font-size: 0.9em; font-weight: bold; padding: 5px 14px; border-radius: 20px; border: 2px solid #f39c12; }
+        .btn-trocar-ano { background-color: rgba(255,255,255,0.15); color: #fff; text-decoration: none; font-size: 0.85em; padding: 5px 12px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.3); transition: 0.2s; }
+        .btn-trocar-ano:hover { background-color: rgba(255,255,255,0.3); }
+        .btn-relatorio { margin-top: 50px; background-color: #f1c40f; color: #222; text-decoration: none; font-size: 1.5em; font-weight: bold; padding: 15px 40px; border-radius: 30px; box-shadow: 0 8px 15px rgba(0,0,0,0.4); transition: transform 0.2s; border: 3px solid #f39c12; }
+        .btn-relatorio:hover { transform: scale(1.05); background-color: #f39c12; }
+
+        /* AJUSTES PARA CELULAR (TELAS DE MENU) */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8em; margin-top: 50px; margin-bottom: 20px; }
+            .grid-menu { gap: 15px; justify-content: center; }
+            .card { width: 130px; padding: 20px 10px; font-size: 1em; }
+            .icone { font-size: 2.2em; margin-bottom: 10px; }
+            .decoracao-giz { font-size: 1.2em; opacity: 0.05; }
+            .barra-superior { right: 10px; top: 10px; }
+            .btn-voltar { font-size: 0.85em; padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="decoracao-giz">
+        <div class="giz-top-left">E = mc²<br>🧪 Verbo<br>🗺️ [BR]</div>
+        <div class="giz-bottom-left">√16 = 4<br>🎒 History<br>X + Y = 10</div>
+        <div class="giz-bottom-right">Sílaba 📝<br>🧭 Sul<br>2³ = 8</div>
+    </div>
+
+    <div class="barra-superior">
+        <span class="saudacao">Olá, {{ request.user.first_name|default:request.user.username }}!</span>
+        {% if request.session.ano_selecionado %}
+        <span class="badge-ano">{{ request.session.ano_selecionado }}º Ano</span>
+        {% endif %}
+        <a href="{% url 'selecionar_ano' %}" class="btn-trocar-ano">🔄 Trocar Ano</a>
+        <a href="{% url 'logout' %}" class="btn-sair">Sair ✖</a>
+    </div>
+
+    <div class="conteudo">
+        <h1>O que vamos estudar hoje? 🚀</h1>
+
+        <div class="grid-menu">
+            <a href="{% url 'matematica' %}" class="card"><span class="icone">🧮</span> Matemática</a>
+            <a href="{% url 'menu_portugues' %}" class="card"><span class="icone">📚</span> Português</a>
+            <a href="#" class="card"><span class="icone">🔬</span> Ciências</a>
+            <a href="{% url 'menu_geografia' %}" class="card"><span class="icone">🗺️</span> Geografia</a>
+            <a href="{% url 'menu_historia' %}" class="card"><span class="icone">📜</span> História</a>
+            <a href="{% url 'menu_ingles' %}" class="card"><span class="icone">🗽</span> Inglês</a>
+        </div>
+
+        <a href="{% url 'relatorio' %}" class="btn-relatorio">📊 Ver Relatório de Desempenho</a>
+    </div>
+</body>
+</html>

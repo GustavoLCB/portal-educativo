@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizando o Espaço</title>
+    <style>
+        body { background-color: #2980b9; color: white; font-family: sans-serif; text-align: center; margin: 0; padding: 10px; }
+        h1 { margin-top: 50px; font-size: 2em; color: #f1c40f; }
+        .instrucao { font-size: 1.2em; margin-bottom: 20px; }
+        
+        .area-itens { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px; }
+        .item { background: white; color: #333; padding: 15px 20px; border-radius: 10px; font-weight: bold; font-size: 1.2em; cursor: pointer; border: 4px solid transparent; transition: 0.2s; }
+        .item.selecionado { border-color: #f1c40f; transform: scale(1.1); box-shadow: 0 0 15px #f1c40f; background-color: #fff9e6; }
+        .item.guardado { display: none; }
+        
+        .area-caixas { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .caixa { width: 90%; max-width: 400px; background: rgba(0,0,0,0.3); border: 3px dashed rgba(255,255,255,0.5); border-radius: 15px; padding: 15px 10px; font-size: 1.2em; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .caixa:hover { background: rgba(255,255,255,0.1); border-color: white; }
+        
+        .numero-caixa { background: #f1c40f; color: #333; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .conteudo-caixa { flex-grow: 1; text-align: left; margin-left: 15px; color: #bdc3c7; }
+        .conteudo-caixa.preenchido { color: #2ecc71; font-size: 1.3em; }
+
+        .btn-voltar { position: absolute; top: 10px; left: 10px; background: #c0392b; color: white; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 0.9em; }
+
+        .tela-fim { display: none; margin-top: 40px; }
+        .btn-novo { background: #2ecc71; color: white; padding: 15px 30px; font-size: 1.2em; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6em; margin-top: 60px; }
+            .item { font-size: 1em; padding: 10px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'menu_geografia' %}" class="btn-voltar">⬅ Voltar</a>
+
+    <h1>Do Menor para o Maior 📏</h1>
+    <p class="instrucao">Toque na palavra e depois no nível correto!</p>
+
+    <div class="area-itens" id="container-itens">
+        <div class="item" data-id="4" onclick="selecionarItem(this)">Estado</div>
+        <div class="item" data-id="1" onclick="selecionarItem(this)">Rua</div>
+        <div class="item" data-id="6" onclick="selecionarItem(this)">Planeta</div>
+        <div class="item" data-id="2" onclick="selecionarItem(this)">Bairro</div>
+        <div class="item" data-id="5" onclick="selecionarItem(this)">País</div>
+        <div class="item" data-id="3" onclick="selecionarItem(this)">Município</div>
+    </div>
+
+    <div class="area-caixas" id="container-caixas">
+        <div class="caixa" onclick="guardarNaCaixa(1)">
+            <div class="numero-caixa">1</div>
+            <div class="conteudo-caixa" id="slot-1">O menor (Onde moramos)</div>
+        </div>
+        <div class="caixa" onclick="guardarNaCaixa(2)">
+            <div class="numero-caixa">2</div>
+            <div class="conteudo-caixa" id="slot-2">Conjunto de Ruas</div>
+        </div>
+        <div class="caixa" onclick="guardarNaCaixa(3)">
+            <div class="numero-caixa">3</div>
+            <div class="conteudo-caixa" id="slot-3">A nossa Cidade</div>
+        </div>
+        <div class="caixa" onclick="guardarNaCaixa(4)">
+            <div class="numero-caixa">4</div>
+            <div class="conteudo-caixa" id="slot-4">Ex: Rio de Janeiro</div>
+        </div>
+        <div class="caixa" onclick="guardarNaCaixa(5)">
+            <div class="numero-caixa">5</div>
+            <div class="conteudo-caixa" id="slot-5">Ex: Brasil</div>
+        </div>
+        <div class="caixa" onclick="guardarNaCaixa(6)">
+            <div class="numero-caixa">6</div>
+            <div class="conteudo-caixa" id="slot-6">O maior de todos!</div>
+        </div>
+    </div>
+
+    <div class="tela-fim" id="tela-fim">
+        <h2>🎉 Espaço Organizado! 🎉</h2>
+        <button class="btn-novo" onclick="location.reload()">Jogar Novamente</button>
+    </div>
+
+    <script>
+        let itemSelecionado = null;
+        let totalGuardados = 0;
+
+        function selecionarItem(elemento) {
+            document.querySelectorAll('.item').forEach(i => i.classList.remove('selecionado'));
+            elemento.classList.add('selecionado');
+            itemSelecionado = elemento;
+        }
+
+        function guardarNaCaixa(numeroSlot) {
+            if (!itemSelecionado) return;
+
+            if (parseInt(itemSelecionado.dataset.id) === numeroSlot) {
+                // Acertou
+                document.getElementById('slot-' + numeroSlot).innerText = itemSelecionado.innerText;
+                document.getElementById('slot-' + numeroSlot).classList.add('preenchido');
+                itemSelecionado.classList.add('guardado');
+                itemSelecionado.classList.remove('selecionado');
+                itemSelecionado = null;
+                totalGuardados++;
+
+                if (totalGuardados === 6) {
+                    setTimeout(() => {
+                        document.getElementById('container-itens').style.display = 'none';
+                        document.getElementById('container-caixas').style.display = 'none';
+                        document.getElementById('tela-fim').style.display = 'block';
+                    }, 500);
+                }
+            } else {
+                alert("Opa! A palavra " + itemSelecionado.innerText + " não fica na posição " + numeroSlot + ".");
+            }
+        }
+    </script>
+</body>
+</html>

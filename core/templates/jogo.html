@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabuada de Gols</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #2E7D32; background-image: repeating-linear-gradient(to bottom, transparent, transparent 40px, rgba(0, 0, 0, 0.08) 40px, rgba(0, 0, 0, 0.08) 80px); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
+        .linha-central { position: absolute; top: 50%; left: 0; width: 100%; height: 5px; background-color: rgba(255,255,255,0.7); transform: translateY(-50%); z-index: 1; }
+        .circulo-central { position: absolute; top: 50%; left: 50%; width: 200px; height: 200px; border: 5px solid rgba(255,255,255,0.7); border-radius: 50%; transform: translate(-50%, -50%); z-index: 1; }
+        .ponto-central { position: absolute; top: 50%; left: 50%; width: 15px; height: 15px; background-color: rgba(255,255,255,0.7); border-radius: 50%; transform: translate(-50%, -50%); z-index: 1; }
+
+        .container-jogo { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; background-color: rgba(0,0,0,0.4); padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(3px); }
+        h1 { font-size: 2.8em; text-shadow: 2px 2px 5px rgba(0,0,0,0.8); margin-top: 0; margin-bottom: 10px; text-align: center; }
+
+        .barra-progresso-wrap { width: 100%; max-width: 400px; background: rgba(255,255,255,0.2); border-radius: 20px; height: 12px; margin-bottom: 20px; overflow: hidden; }
+        .barra-progresso { height: 100%; background: linear-gradient(90deg, #f1c40f, #e67e22); border-radius: 20px; transition: width 0.4s ease; }
+        .contador-questoes { font-size: 0.95em; color: rgba(255,255,255,0.8); margin-bottom: 15px; }
+
+        /* PLACAR NORMAL (adição, subtração, multiplicação, divisão) */
+        .placar { background-color: #1a1a1a; padding: 25px 40px; border-radius: 15px; border: 5px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 20px; font-size: 3.5em; font-weight: bold; margin-bottom: 30px; }
+        .caixa-numero { background-color: #fff; color: #000; min-width: 100px; padding: 0 15px; height: 110px; display: flex; justify-content: center; align-items: center; border-radius: 10px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); box-sizing: border-box; }
+        .sinal { color: #3498db; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-family: Arial, sans-serif; }
+
+        /* PLACAR POTENCIAÇÃO — base grande com expoente sobrescrito */
+        .placar-pot { background-color: #1a1a1a; padding: 25px 40px; border-radius: 15px; border: 5px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; font-size: 3.5em; font-weight: bold; margin-bottom: 30px; display: none; }
+        .pot-base { background-color: #fff; color: #000; min-width: 100px; padding: 0 15px; height: 110px; display: flex; justify-content: center; align-items: center; border-radius: 10px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); box-sizing: border-box; position: relative; }
+        .pot-exp { position: absolute; top: 8px; right: -18px; font-size: 0.55em; color: #3498db; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+
+        .area-chute { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        input[type="number"] { font-size: 3em; padding: 10px; width: 220px; text-align: center; border-radius: 10px; border: 3px solid #ccc; box-shadow: 0 5px 10px rgba(0,0,0,0.4); outline: none; }
+        input[type="number"]:focus { border-color: #3498db; }
+        button { background-color: #FF8C00; color: white; font-size: 1.8em; padding: 15px 50px; border: 3px solid #fff; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 8px 15px rgba(0,0,0,0.5); transition: transform 0.1s; }
+        button:active { transform: scale(0.95); }
+        #mensagem { font-size: 2.5em; font-weight: bold; margin-top: 20px; height: 50px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); text-align: center; }
+        .btn-voltar-jogo { margin-top: 25px; background-color: rgba(255,255,255,0.2); color: #fff; text-decoration: none; font-size: 1em; font-weight: bold; padding: 10px 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); transition: background-color 0.2s; }
+        .btn-voltar-jogo:hover { background-color: rgba(255,255,255,0.4); }
+
+        /* TELA FINAL */
+        .tela-final { display: none; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+        .tela-final .medalha { font-size: 5em; }
+        .tela-final h2 { font-size: 2.2em; margin: 0; }
+        .tela-final .resultado { font-size: 1.3em; color: #f1c40f; }
+        .btn-jogar-novamente { background-color: #27ae60; color: white; font-size: 1.2em; padding: 14px 40px; border: 3px solid #fff; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 8px 15px rgba(0,0,0,0.5); margin-top: 10px; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6em; }
+            .placar, .placar-pot { font-size: 2em; padding: 15px 20px; gap: 10px; }
+            .caixa-numero, .pot-base { min-width: 70px; height: 80px; }
+            input[type="number"] { font-size: 2em; width: 160px; }
+            button { font-size: 1.3em; padding: 12px 30px; }
+            #mensagem { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="linha-central"></div>
+    <div class="circulo-central"></div>
+    <div class="ponto-central"></div>
+
+    <div class="container-jogo">
+        <h1 id="titulo-jogo">Jogo ⚽</h1>
+
+        <div class="contador-questoes" id="contador-questoes">Questão 1 de 10</div>
+        <div class="barra-progresso-wrap">
+            <div class="barra-progresso" id="barra-prog" style="width: 0%"></div>
+        </div>
+
+        <div id="area-jogo">
+            <!-- Placar operações normais -->
+            <div class="placar" id="placar-normal">
+                <div class="caixa-numero" id="num1">?</div>
+                <div class="sinal" id="sinal-operacao"></div>
+                <div class="caixa-numero" id="num2">?</div>
+            </div>
+
+            <!-- Placar potenciação: base com expoente sobrescrito -->
+            <div class="placar-pot" id="placar-pot">
+                <div class="pot-base" id="pot-base">
+                    <span id="pot-base-num">?</span>
+                    <span class="pot-exp" id="pot-exp">?</span>
+                </div>
+            </div>
+
+            <div class="area-chute">
+                <input type="number" id="resposta" placeholder="?" autocomplete="off">
+                <button onclick="verificarChute()">Chutar a Gol! ⚽</button>
+            </div>
+
+            <div id="mensagem"></div>
+            <a id="link-voltar" href="#" class="btn-voltar-jogo">⬅️ Voltar ao Menu</a>
+        </div>
+
+        <!-- TELA FINAL -->
+        <div class="tela-final" id="tela-final">
+            <div class="medalha" id="medalha-final">🏆</div>
+            <h2 id="titulo-final">Parabéns!</h2>
+            <p class="resultado" id="texto-resultado"></p>
+            <button class="btn-jogar-novamente" onclick="reiniciarJogo()">🔄 Jogar Novamente</button>
+            <a id="link-voltar-final" href="#" class="btn-voltar-jogo">⬅️ Voltar ao Menu</a>
+        </div>
+    </div>
+
+    <script>
+        const operacaoAtual  = "{{ operacao }}";
+        const nivelAtual     = "{{ nivel }}";
+        const TOTAL_QUESTOES = 10;
+        const ehPotenciacao  = (operacaoAtual === 'potenciacao');
+
+        let valor1 = 0, valor2 = 0, resultadoCorreto = 0;
+        let juegoRodando = false, tempoInicio = 0;
+        let questaoAtual = 0, acertosTotal = 0;
+        let filaQuestoes = [], indiceFila = 0;
+
+        // ── MOSTRAR O PLACAR CORRETO ──────────────────────────────────────
+        if (ehPotenciacao) {
+            document.getElementById('placar-normal').style.display = 'none';
+            document.getElementById('placar-pot').style.display    = 'flex';
+        }
+
+        // ── LINKS E TÍTULO ────────────────────────────────────────────────
+        document.getElementById('link-voltar').href       = `/matematica/${operacaoAtual}/`;
+        document.getElementById('link-voltar-final').href = `/matematica/${operacaoAtual}/`;
+
+        const titulosNivel = {
+            quadrados: 'Quadrados (n²)', cubos: 'Cubos (n³)', potencias: 'Potências (n⁴ · n⁵)',
+            unidades: 'Unidades', dezenas: 'Dezenas', centenas: 'Centenas'
+        };
+        const nomesOp = {
+            adicao: 'Adição', subtracao: 'Subtração', multiplicacao: 'Multiplicação',
+            divisao: 'Divisão', potenciacao: 'Potenciação', radiciacao: 'Radiciação'
+        };
+        document.getElementById('titulo-jogo').innerText =
+            `${nomesOp[operacaoAtual] || operacaoAtual} — ${titulosNivel[nivelAtual] || nivelAtual} ⚽`;
+
+        // ── UTILITÁRIOS ───────────────────────────────────────────────────
+        function getRandom(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        function embaralhar(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ── CONSTRUIR FILA SEM REPETIÇÃO ──────────────────────────────────
+        function construirFila() {
+            let pares = [];
+
+            if (operacaoAtual === 'potenciacao') {
+                if (nivelAtual === 'quadrados') {
+                    for (let b = 2; b <= 12; b++)
+                        pares.push({ n1: b, n2: 2, res: Math.pow(b, 2), expStr: '²' });
+                } else if (nivelAtual === 'cubos') {
+                    for (let b = 2; b <= 10; b++)
+                        pares.push({ n1: b, n2: 3, res: Math.pow(b, 3), expStr: '³' });
+                } else { // potencias
+                    for (let b = 2; b <= 8; b++) {
+                        pares.push({ n1: b, n2: 4, res: Math.pow(b, 4), expStr: '⁴' });
+                        pares.push({ n1: b, n2: 5, res: Math.pow(b, 5), expStr: '⁵' });
+                    }
+                }
+
+            } else if (operacaoAtual === 'adicao') {
+                let min = 1, max = 9;
+                if (nivelAtual === 'dezenas')  { min = 10;  max = 99; }
+                if (nivelAtual === 'centenas') { min = 100; max = 999; }
+                for (let i = 0; i < 30; i++) {
+                    let n1 = getRandom(min, max), n2 = getRandom(min, max);
+                    pares.push({ n1, n2, res: n1 + n2, sinal: '+' });
+                }
+
+            } else if (operacaoAtual === 'subtracao') {
+                let min = 1, max = 9;
+                if (nivelAtual === 'dezenas')  { min = 10;  max = 99; }
+                if (nivelAtual === 'centenas') { min = 100; max = 999; }
+                for (let i = 0; i < 30; i++) {
+                    let n1 = getRandom(min, max), n2 = getRandom(min, max);
+                    if (n1 < n2) { let t = n1; n1 = n2; n2 = t; }
+                    pares.push({ n1, n2, res: n1 - n2, sinal: '−' });
+                }
+
+            } else if (operacaoAtual === 'multiplicacao') {
+                if (nivelAtual === 'unidades') {
+                    for (let a = 1; a <= 9; a++)
+                        for (let b = 1; b <= 9; b++)
+                            pares.push({ n1: a, n2: b, res: a * b, sinal: '×' });
+                } else if (nivelAtual === 'dezenas') {
+                    for (let i = 0; i < 30; i++) {
+                        let n1 = getRandom(10, 99), n2 = getRandom(2, 9);
+                        pares.push({ n1, n2, res: n1 * n2, sinal: '×' });
+                    }
+                } else {
+                    for (let i = 0; i < 30; i++) {
+                        let n1 = getRandom(100, 999), n2 = getRandom(2, 9);
+                        pares.push({ n1, n2, res: n1 * n2, sinal: '×' });
+                    }
+                }
+
+            } else if (operacaoAtual === 'divisao') {
+                if (nivelAtual === 'unidades') {
+                    for (let div = 1; div <= 9; div++)
+                        for (let q = 1; q <= 9; q++)
+                            pares.push({ n1: div * q, n2: div, res: q, sinal: '÷' });
+                } else if (nivelAtual === 'dezenas') {
+                    for (let i = 0; i < 30; i++) {
+                        let n2 = getRandom(2, 9);
+                        let res = getRandom(Math.ceil(10/n2), Math.floor(99/n2));
+                        pares.push({ n1: n2 * res, n2, res, sinal: '÷' });
+                    }
+                } else {
+                    for (let i = 0; i < 30; i++) {
+                        let n2 = getRandom(2, 9);
+                        let res = getRandom(Math.ceil(100/n2), Math.floor(999/n2));
+                        pares.push({ n1: n2 * res, n2, res, sinal: '÷' });
+                    }
+                }
+
+            } else if (operacaoAtual === 'radiciacao') {
+                for (let r = 2; r <= 15; r++)
+                    pares.push({ n1: r * r, n2: 2, res: r, sinal: '√' });
+            }
+
+            return embaralhar(pares);
+        }
+
+        function proximoDaFila() {
+            if (indiceFila >= filaQuestoes.length) {
+                filaQuestoes = construirFila();
+                indiceFila   = 0;
+            }
+            return filaQuestoes[indiceFila++];
+        }
+
+        // ── EXIBIR QUESTÃO NO PLACAR ──────────────────────────────────────
+        function exibirNoPlacar(q) {
+            if (ehPotenciacao) {
+                document.getElementById('pot-base-num').innerText = q.n1;
+                document.getElementById('pot-exp').innerText      = q.expStr;
+            } else {
+                document.getElementById('num1').innerText          = q.n1;
+                document.getElementById('num2').innerText          = q.n2;
+                document.getElementById('sinal-operacao').innerText = q.sinal;
+            }
+        }
+
+        // ── PROGRESSO ─────────────────────────────────────────────────────
+        function atualizarProgresso() {
+            document.getElementById('contador-questoes').innerText =
+                `Questão ${questaoAtual} de ${TOTAL_QUESTOES}`;
+            document.getElementById('barra-prog').style.width =
+                ((questaoAtual / TOTAL_QUESTOES) * 100) + '%';
+        }
+
+        // ── ROLETA ────────────────────────────────────────────────────────
+        function girarRoleta() {
+            if (juegoRodando) return;
+            juegoRodando = true;
+
+            document.getElementById('mensagem').innerText = "";
+            document.getElementById('resposta').value = "";
+            document.getElementById('resposta').disabled = true;
+            document.getElementById('resposta').style.borderColor = "#ccc";
+
+            let contador = 0;
+            let intervalo = setInterval(() => {
+                exibirNoPlacar(proximoDaFila());
+                contador++;
+                if (contador >= 15) {
+                    clearInterval(intervalo);
+                    let final = proximoDaFila();
+                    valor1 = final.n1; valor2 = final.n2; resultadoCorreto = final.res;
+                    exibirNoPlacar(final);
+                    juegoRodando = false;
+                    document.getElementById('resposta').disabled = false;
+                    document.getElementById('resposta').focus();
+                    tempoInicio = Date.now();
+                }
+            }, 50);
+        }
+
+        // ── VERIFICAR CHUTE ───────────────────────────────────────────────
+        function verificarChute() {
+            if (document.getElementById('resposta').value === "") return;
+
+            let tempoGasto    = (Date.now() - tempoInicio) / 1000;
+            let respostaAluno = parseInt(document.getElementById('resposta').value);
+            let acertouConta  = (respostaAluno === resultadoCorreto);
+
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: operacaoAtual, nivel: nivelAtual,
+                    numero_1: valor1, numero_2: valor2,
+                    resposta_aluno: respostaAluno,
+                    acertou: acertouConta, tempo_segundos: tempoGasto
+                })
+            });
+
+            if (acertouConta) acertosTotal++;
+            questaoAtual++;
+            atualizarProgresso();
+
+            let mensagemDiv   = document.getElementById('mensagem');
+            let inputResposta = document.getElementById('resposta');
+
+            if (acertouConta) {
+                mensagemDiv.innerText = "⚽ GOOOL!!!";
+                mensagemDiv.style.color = "#00FF00";
+                inputResposta.style.borderColor = "#00FF00";
+            } else {
+                mensagemDiv.innerText = `❌ Era ${resultadoCorreto}! Próxima...`;
+                mensagemDiv.style.color = "#FF4500";
+                inputResposta.style.borderColor = "#FF4500";
+            }
+
+            if (questaoAtual >= TOTAL_QUESTOES) {
+                setTimeout(mostrarFinal, 1500);
+            } else {
+                setTimeout(girarRoleta, acertouConta ? 1500 : 2000);
+            }
+        }
+
+        // ── TELA FINAL ────────────────────────────────────────────────────
+        function mostrarFinal() {
+            document.getElementById('area-jogo').style.display  = 'none';
+            document.getElementById('tela-final').style.display = 'flex';
+
+            const pct = Math.round((acertosTotal / TOTAL_QUESTOES) * 100);
+            let medalha = '🥉', titulo = 'Continue praticando!';
+            if (pct === 100)    { medalha = '🏆'; titulo = 'Perfeito! Incrível!'; }
+            else if (pct >= 80) { medalha = '🥇'; titulo = 'Muito bem!'; }
+            else if (pct >= 60) { medalha = '🥈'; titulo = 'Bom trabalho!'; }
+
+            document.getElementById('medalha-final').innerText   = medalha;
+            document.getElementById('titulo-final').innerText    = titulo;
+            document.getElementById('texto-resultado').innerText =
+                `Você acertou ${acertosTotal} de ${TOTAL_QUESTOES} questões (${pct}%)`;
+            document.getElementById('barra-prog').style.width = '100%';
+            document.getElementById('contador-questoes').innerText =
+                `${TOTAL_QUESTOES} de ${TOTAL_QUESTOES} questões concluídas`;
+        }
+
+        function reiniciarJogo() {
+            questaoAtual = 0; acertosTotal = 0;
+            document.getElementById('tela-final').style.display = 'none';
+            document.getElementById('area-jogo').style.display  = 'block';
+            atualizarProgresso();
+            girarRoleta();
+        }
+
+        document.getElementById("resposta").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") { event.preventDefault(); verificarChute(); }
+        });
+
+        window.onload = () => {
+            filaQuestoes = construirFila();
+            indiceFila   = 0;
+            atualizarProgresso();
+            girarRoleta();
+        };
+    </script>
+</body>
+</html>

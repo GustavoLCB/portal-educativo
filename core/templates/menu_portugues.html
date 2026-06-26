@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nível 2 - Português</title>
+    <style>
+        body { background-color: #1e3f20; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 50px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; position: relative; }
+        .decoracao-giz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.08; font-size: 1.8em; color: #ffffff; pointer-events: none; user-select: none; padding: 20px; box-sizing: border-box; line-height: 2em; font-weight: bold; }
+        .giz-top-left { position: absolute; top: 40px; left: 40px; } .giz-top-right { position: absolute; top: 40px; right: 40px; text-align: right; }
+        .giz-bottom-left { position: absolute; bottom: 40px; left: 40px; } .giz-bottom-right { position: absolute; bottom: 40px; right: 40px; text-align: right; }
+        
+        .barra-superior { position: absolute; top: 20px; right: 40px; display: flex; align-items: center; gap: 15px; z-index: 20; }
+        .btn-voltar { background-color: #34495e; color: white; text-decoration: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; border: 2px solid #2c3e50; transition: 0.2s; }
+        .btn-voltar:hover { background-color: #2c3e50; }
+
+        .conteudo { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; margin-top: 30px; }
+        h1 { font-size: 3em; margin-bottom: 40px; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); font-family: 'Courier New', Courier, monospace; text-align: center; }
+        .grid-menu { display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        .card { background-color: #e0e0e0; border-radius: 15px; padding: 35px 20px; width: 180px; text-align: center; text-decoration: none; color: #222222; font-size: 1.3em; font-weight: bold; box-shadow: 5px 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s; border: 3px solid #b0b0b0; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        .card:hover { transform: scale(1.05); background-color: #eeeeee; }
+        .icone { font-size: 2.8em; display: block; margin-bottom: 15px; color: #0056b3; filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2)); }
+        
+        /* AJUSTES PARA CELULAR (TELAS DE MENU) */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8em; margin-top: 50px; margin-bottom: 20px; }
+            .grid-menu { gap: 15px; justify-content: center; }
+            .card { width: 130px; padding: 20px 10px; font-size: 1em; }
+            .icone { font-size: 2.2em; margin-bottom: 10px; }
+            .decoracao-giz { font-size: 1.2em; opacity: 0.05; }
+            .barra-superior { right: 10px; top: 10px; }
+            .btn-voltar { font-size: 0.85em; padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="decoracao-giz">
+        <div class="giz-top-left">S, SS, Ç<br>📝 Verbo</div>
+        <div class="giz-bottom-right">Sílaba 📚<br>Oxítona</div>
+    </div>
+
+    <div class="barra-superior">
+        <a href="{% url 'home' %}" class="btn-voltar">⬅ Voltar ao Painel</a>
+    </div>
+
+    <div class="conteudo">
+        <h1>📚 Nível 2: Português</h1>
+
+        <div class="grid-menu">
+            <a href="{% url 'portugues_ortografia' %}" class="card"><span class="icone">✏️</span> Ortografia</a>
+            <a href="{% url 'portugues_silaba' %}" class="card"><span class="icone">🗣️</span> Sílaba Tônica</a>
+            <a href="{% url 'portugues_sinonimos' %}" class="card"><span class="icone">🔄</span> Sinônimos</a>
+            <a href="{% url 'portugues_silabas' %}" class="card"><span class="icone">✂️</span> Caçador de Sílabas</a>
+            <a href="{% url 'portugues_gramatica' %}" class="card"><span class="icone">🔎</span> Detetive de Palavras</a>
+            <a href="{% url 'portugues_encontros_vocalicos' %}" class="card"><span class="icone">🔤</span> Encontros Vocálicos</a>
+            <a href="{% url 'portugues_digrafo' %}" class="card"><span class="icone">🔡</span> Dígrafos</a>
+        </div>
+    </div>
+</body>
+</html>

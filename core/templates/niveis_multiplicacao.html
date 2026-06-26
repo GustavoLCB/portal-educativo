@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Níveis de Multiplicação</title>
+    <style>
+        body { background-color: #1e3f20; background-image: radial-gradient(rgba(255,255,255,0.03) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.02) 15%, transparent 15%); background-size: 6px 6px; background-position: 0 0, 3px 3px; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 50px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; box-sizing: border-box; position: relative; }
+        .decoracao-giz { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.08; font-size: 1.8em; color: #ffffff; pointer-events: none; user-select: none; padding: 20px; box-sizing: border-box; line-height: 2em; font-weight: bold; }
+        .giz-top-left { position: absolute; top: 40px; left: 40px; } .giz-top-right { position: absolute; top: 40px; right: 40px; text-align: right; }
+        .conteudo { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 3em; margin-bottom: 40px; font-family: 'Courier New', Courier, monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
+        .grid-menu { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        .card { background-color: #e0e0e0; border-radius: 15px; padding: 30px; width: 200px; text-align: center; text-decoration: none; color: #222222; box-shadow: 5px 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s; border: 3px solid #b0b0b0; }
+        .card:hover { transform: scale(1.05); background-color: #eeeeee; }
+        .titulo { font-size: 1.5em; font-weight: bold; display: block; margin-bottom: 5px; color: #111; }
+        .subtitulo { font-size: 0.95em; color: #555; display: block; margin-bottom: 15px; }
+        .icone { font-size: 3em; display: block; color: #0056b3; }
+        
+        .card-unidades { border: 3px solid #2ecc71; }
+        .card-unidades:hover { background-color: #2ecc71; }
+        .card-dezenas { border: 3px solid #f1c40f; }
+        .card-dezenas:hover { background-color: #f1c40f; }
+        .card-centenas { border: 3px solid #e74c3c; }
+        .card-centenas:hover { background-color: #e74c3c; }
+
+        .btn-voltar { margin-top: 40px; background-color: #bdc3c7; color: #2c3e50; text-decoration: none; font-size: 1.1em; font-weight: bold; padding: 12px 30px; border-radius: 30px; box-shadow: 3px 3px 10px rgba(0,0,0,0.3); transition: background-color 0.2s, color 0.2s; border: 2px solid #95a5a6; }
+        .btn-voltar:hover { background-color: #ecf0f1; color: #000; }
+
+        /* AJUSTES PARA CELULAR (TELAS DE MENU) */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 1.8em; margin-top: 50px; margin-bottom: 20px; }
+            .grid-menu { gap: 15px; justify-content: center; }
+            .card { width: 130px; padding: 20px 10px; font-size: 1em; }
+            .icone { font-size: 2.2em; margin-bottom: 10px; }
+            .decoracao-giz { font-size: 1.2em; opacity: 0.05; }
+            .barra-superior { right: 10px; top: 10px; }
+            .btn-voltar { font-size: 0.85em; padding: 6px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="decoracao-giz">
+        <div class="giz-top-left">7 × 8 = ?<br>4 × 9 = ?</div>
+        <div class="giz-top-right">12 × 5 = ?<br>150 × 4 = ?</div>
+    </div>
+    <div class="conteudo">
+        <h1>✖️ Níveis de Multiplicação</h1>
+        <div class="grid-menu">
+            <a href="{% url 'jogo_tabuada' 'multiplicacao' 'unidades' %}" class="card card-unidades">
+                <span class="titulo">Unidades</span>
+                <span class="subtitulo">Categoria Kart</span>
+                <span class="icone">🏎️</span>
+            </a>
+            <a href="{% url 'jogo_tabuada' 'multiplicacao' 'dezenas' %}" class="card card-dezenas">
+                <span class="titulo">Dezenas</span>
+                <span class="subtitulo">Carro de Turismo</span>
+                <span class="icone">🚘</span>
+            </a>
+            <a href="{% url 'jogo_tabuada' 'multiplicacao' 'centenas' %}" class="card card-centenas">
+                <span class="titulo">Centenas</span>
+                <span class="subtitulo">Fórmula 1</span>
+                <span class="icone">🏁</span>
+            </a>
+        </div>
+        <a href="{% url 'matematica' %}" class="btn-voltar">⬅️ Voltar para Operações</a>
+    </div>
+</body>
+</html>
