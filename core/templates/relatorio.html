@@ -54,12 +54,11 @@
             <div class="grid-estatisticas">
                 {% for stat in estatisticas_portugues %}
                     <div class="cartao" style="border: 2px solid #2ecc71;">
-                        <span class="icone">{{ stat.icone }}</span>
+                        <span class="icone">🇧🇷</span>
                         <div class="titulo-op">{{ stat.nome }}</div>
-                        <div class="dado">Jogadas: <strong>{{ stat.total }}</strong></div>
-                        <div class="dado">Acertos: <strong>{{ stat.acertos }}</strong></div>
-                        <div class="dado">Erros: <strong>{{ stat.erros }}</strong></div>
-                        <div class="dado">Aproveitamento: <strong>{{ stat.taxa_acerto }}%</strong></div>
+                        <div class="dado">Rodadas Jogadas: <strong>{{ stat.total_rodadas }}</strong></div>
+                        <div class="dado">Rodadas Perfeitas (0 Erros): <strong>{{ stat.rodadas_perfeitas }}</strong></div>
+                        <div class="dado">Taxa de Perfeição: <strong>{{ stat.taxa_perfeicao }}%</strong></div>
                         <div class="dado">Tempo Médio: <strong>{{ stat.tempo_medio }}s</strong></div>
                     </div>
                 {% empty %}
@@ -80,6 +79,57 @@
                     </div>
                 {% empty %}
                     <p class="mensagem-vazia">Ainda não há dados de Inglês.</p>
+                {% endfor %}
+            </div>
+
+            <h2>🌎 Geografia</h2>
+            <div class="grid-estatisticas">
+                {% for stat in estatisticas_geografia %}
+                    <div class="cartao" style="border: 2px solid #f39c12;">
+                        <span class="icone">🌎</span>
+                        <div class="titulo-op">{{ stat.nome }}</div>
+                        <div class="dado">Rodadas Jogadas: <strong>{{ stat.total_rodadas }}</strong></div>
+                        <div class="dado">Rodadas Perfeitas (0 Erros): <strong>{{ stat.rodadas_perfeitas }}</strong></div>
+                        <div class="dado">Taxa de Perfeição: <strong>{{ stat.taxa_perfeicao }}%</strong></div>
+                        <div class="dado">Tempo Médio: <strong>{{ stat.tempo_medio }}s</strong></div>
+                    </div>
+                {% empty %}
+                    <p class="mensagem-vazia">Ainda não há dados de Geografia.</p>
+                {% endfor %}
+            </div>
+
+
+            <h2>🌎 Geografia</h2>
+            <div class="grid-estatisticas">
+                {% for stat in estatisticas_geografia %}
+                    <div class="cartao" style="border: 2px solid #f39c12;">
+                        <span class="icone">{{ stat.icone }}</span>
+                        <div class="titulo-op">{{ stat.nome }}</div>
+                        <div class="dado">Jogadas: <strong>{{ stat.total }}</strong></div>
+                        <div class="dado">Acertos: <strong>{{ stat.acertos }}</strong></div>
+                        <div class="dado">Erros: <strong>{{ stat.erros }}</strong></div>
+                        <div class="dado">Aproveitamento: <strong>{{ stat.taxa_acerto }}%</strong></div>
+                        <div class="dado">Tempo Médio: <strong>{{ stat.tempo_medio }}s</strong></div>
+                    </div>
+                {% empty %}
+                    <p class="mensagem-vazia">Ainda não há dados de Geografia.</p>
+                {% endfor %}
+            </div>
+
+            <h2>📜 História</h2>
+            <div class="grid-estatisticas">
+                {% for stat in estatisticas_historia %}
+                    <div class="cartao" style="border: 2px solid #7d3c0a;">
+                        <span class="icone">{{ stat.icone }}</span>
+                        <div class="titulo-op">{{ stat.nome }}</div>
+                        <div class="dado">Jogadas: <strong>{{ stat.total }}</strong></div>
+                        <div class="dado">Acertos: <strong>{{ stat.acertos }}</strong></div>
+                        <div class="dado">Erros: <strong>{{ stat.erros }}</strong></div>
+                        <div class="dado">Aproveitamento: <strong>{{ stat.taxa_acerto }}%</strong></div>
+                        <div class="dado">Tempo Médio: <strong>{{ stat.tempo_medio }}s</strong></div>
+                    </div>
+                {% empty %}
+                    <p class="mensagem-vazia">Ainda não há dados de História.</p>
                 {% endfor %}
             </div>
 
