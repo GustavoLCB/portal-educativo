@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
-from .models import RegistroJogada, BancoQuestao, BancoQuestao
+from .models import RegistroJogada, BancoQuestao
 
 # --- SISTEMA DE ACESSO ---
 def login_view(request):
@@ -94,8 +94,6 @@ def relatorio_desempenho(request):
     estatisticas_matematica = []
     estatisticas_ingles = []
     estatisticas_portugues = []
-    estatisticas_geografia = []
-    estatisticas_historia = []
     
     if total_geral > 0:
         operacoes_math = ['adicao', 'subtracao', 'multiplicacao', 'divisao']
@@ -146,48 +144,11 @@ def relatorio_desempenho(request):
                     'taxa_acerto': round(taxa_op, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
                 })
 
-        jogos_geografia = [
-            ('geografia_quiz', 'cidades_questao', 'Quiz Agricultura', '🌾'),
-            ('geografia_pecuaria', 'cidades_questao', 'Pecuária', '🐄'),
-            ('geografia_paisagem', 'cidades_questao', 'Quiz Paisagens', '📸'),
-        ]
-        for op_id, nivel_id, nome_op, icone_op in jogos_geografia:
-            jogadas_op = jogadas.filter(operacao=op_id)
-            if jogadas_op.count() > 0:
-                acertos_op = jogadas_op.filter(acertou=True).count()
-                taxa_op = (acertos_op / jogadas_op.count()) * 100
-                tempo_medio = jogadas_op.aggregate(Avg('tempo_segundos'))['tempo_segundos__avg']
-                estatisticas_geografia.append({
-                    'nome': nome_op, 'icone': icone_op,
-                    'total': jogadas_op.count(), 'acertos': acertos_op,
-                    'erros': jogadas_op.count() - acertos_op,
-                    'taxa_acerto': round(taxa_op, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
-                })
-
-        jogos_historia = [
-            ('historia_cidades', 'cidades_questao', 'Crescimento das Cidades', '🏙️'),
-            ('historia_municipio', 'municipio_questao', 'O Município é de Todos', '🏛️'),
-        ]
-        for op_id, nivel_id, nome_op, icone_op in jogos_historia:
-            jogadas_op = jogadas.filter(operacao=op_id, nivel=nivel_id)
-            if jogadas_op.count() > 0:
-                acertos_op = jogadas_op.filter(acertou=True).count()
-                taxa_op = (acertos_op / jogadas_op.count()) * 100
-                tempo_medio = jogadas_op.aggregate(Avg('tempo_segundos'))['tempo_segundos__avg']
-                estatisticas_historia.append({
-                    'nome': nome_op, 'icone': icone_op,
-                    'total': jogadas_op.count(), 'acertos': acertos_op,
-                    'erros': jogadas_op.count() - acertos_op,
-                    'taxa_acerto': round(taxa_op, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
-                })
-
     contexto = {
         'total_geral': total_geral,
         'estatisticas': estatisticas_matematica,
         'estatisticas_ingles': estatisticas_ingles,
-        'estatisticas_portugues': estatisticas_portugues,
-        'estatisticas_geografia': estatisticas_geografia,
-        'estatisticas_historia': estatisticas_historia,
+        'estatisticas_portugues': estatisticas_portugues
     }
     return render(request, 'relatorio.html', contexto)
 
