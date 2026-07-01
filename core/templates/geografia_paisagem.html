@@ -52,6 +52,9 @@
     <script>
         const questoesData = {{ questoes_json|safe }};
         let indiceAtual = 0; let erros = 0;
+        let erroNestaQuestao = 0;
+        const tempoInicio = Date.now();
+        let tempoInicioQuestao = Date.now();
         const totalQuestoes = questoesData.length;
         const perguntaDisplay = document.getElementById('pergunta-display');
         const opcoesDisplay = document.getElementById('opcoes-display');
@@ -87,6 +90,11 @@
                 setTimeout(() => botao.classList.remove('errado'), 400);
                 erros++; document.getElementById('contador-erros').innerText = erros;
             }
+        }
+        function salvarQuestao(acertou) {
+            const tempo = Math.floor((Date.now() - tempoInicioQuestao) / 1000);
+            tempoInicioQuestao = Date.now();
+            fetch('/salvar_jogada/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ operacao: 'geografia_paisagem', nivel: 'paisagem_questao', resposta_aluno: String(indiceAtual), acertou: acertou, tempo_segundos: tempo }) });
         }
         carregarQuestao();
     </script>

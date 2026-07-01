@@ -7,34 +7,21 @@
     <style>
         body { background-color: #16a085; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; margin: 0; }
         h1 { font-size: 2.5em; color: #f1c40f; margin-bottom: 5px; margin-top: 40px; }
-        
         .area-jogo { max-width: 900px; margin: 20px auto; background: rgba(0,0,0,0.2); padding: 40px 20px; border-radius: 20px; }
         .pergunta-container { font-size: 1.8em; line-height: 1.5; margin-bottom: 40px; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px;}
         .grid-opcoes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-        
         .btn-opcao { background-color: #3498db; color: white; padding: 20px; border-radius: 12px; font-size: 1.2em; font-weight: bold; cursor: pointer; border: 4px solid #2980b9; transition: all 0.2s; }
         .btn-opcao:hover { transform: scale(1.05); background-color: #2980b9; }
         .btn-opcao.correto { background-color: #2ecc71; border-color: #27ae60; }
         .btn-opcao.errado { background-color: #e74c3c; border-color: #c0392b; animation: tremer 0.3s; }
-        
-        @keyframes tremer {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); }
-            75% { transform: translateX(-10px); }
-            100% { transform: translateX(0); }
-        }
-        
+        @keyframes tremer { 0% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } 100% { transform: translateX(0); } }
         .placar { font-size: 1.5em; margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; display: inline-block; font-weight: bold; }
         .texto-progresso { color: #f1c40f; margin-right: 20px; }
         .texto-erros { color: #e74c3c; }
-        
         .tela-fim { display: none; }
         .tela-fim h2 { font-size: 3em; color: #2ecc71; }
         .btn-novo-jogo { background: #e74c3c; color: white; padding: 15px 30px; font-size: 1.5em; border: none; border-radius: 10px; cursor: pointer; margin-top: 20px; font-weight: bold; }
-        
         .btn-voltar { position: absolute; top: 15px; left: 15px; text-decoration: none; color: white; font-weight: bold; background: #2c3e50; padding: 10px 15px; border-radius: 8px; z-index: 100; font-size: 1em; }
-
         @media (max-width: 768px) {
             body { padding: 10px; }
             h1 { font-size: 1.8em; margin-top: 55px; margin-bottom: 10px; }
@@ -51,32 +38,29 @@
     </style>
 </head>
 <body>
-
     <a href="{% url 'menu_geografia' %}" class="btn-voltar">⬅ Voltar</a>
-
     <h1>Vida na Fazenda 🐄</h1>
     <p>Complete a frase clicando na palavra correta!</p>
-
     <div class="area-jogo" id="tela-quiz">
         <div class="pergunta-container" id="pergunta-display"></div>
         <div class="grid-opcoes" id="opcoes-display"></div>
     </div>
-
     <div class="area-jogo tela-fim" id="tela-fim">
         <h2>🎉 Excelente Trabalho! 🎉</h2>
         <button class="btn-novo-jogo" onclick="location.reload()">Jogar Novamente</button>
     </div>
-
     <div class="placar">
         <span class="texto-progresso">Questão: <span id="contador-atual">1</span>/<span id="total-questoes"></span></span>
         <span class="texto-erros">Erros: <span id="contador-erros">0</span></span>
     </div>
-
     <script>
         const questoesData = {{ frases_json|safe }};
         let indiceAtual = 0;
         let erros = 0;
+        let erroNestaQuestao = 0;
         const totalQuestoes = questoesData.length;
+        const tempoInicio = Date.now();
+        let tempoInicioQuestao = Date.now();
 
         const perguntaDisplay = document.getElementById('pergunta-display');
         const opcoesDisplay = document.getElementById('opcoes-display');
@@ -84,16 +68,13 @@
 
         function carregarQuestao() {
             if (indiceAtual >= totalQuestoes) {
-                document.getElementById('tela-quiz').style.display = 'none';
-                document.getElementById('tela-fim').style.display = 'block';
+                finalizarJogo();
                 return;
             }
-
             const dadosAtuais = questoesData[indiceAtual];
-            perguntaDisplay.innerHTML = `<strong>${dadosAtuais.frase}</strong>`;
+            perguntaDisplay.innerHTML = '<strong>' + dadosAtuais.frase + '</strong>';
             opcoesDisplay.innerHTML = '';
             document.getElementById('contador-atual').innerText = indiceAtual + 1;
-
             dadosAtuais.opcoes.forEach(opcao => {
                 const btn = document.createElement('button');
                 btn.className = 'btn-opcao';
@@ -106,24 +87,39 @@
         function verificarResposta(botao, selecionada, correta, fraseOriginal) {
             if (selecionada === correta) {
                 botao.classList.add('correto');
-                
-                // Preenche a lacuna com a palavra certa na tela
-                const fraseCompleta = fraseOriginal.replace('______', `<span style="color: #f1c40f;">${correta}</span>`);
-                perguntaDisplay.innerHTML = `<strong>${fraseCompleta}</strong>`;
-
-                const todosBotoes = document.querySelectorAll('.btn-opcao');
-                todosBotoes.forEach(b => b.disabled = true);
-
-                setTimeout(() => {
-                    indiceAtual++;
-                    carregarQuestao();
-                }, 1500);
+                const fraseCompleta = fraseOriginal.replace('______', '<span style="color:#f1c40f;">' + correta + '</span>');
+                perguntaDisplay.innerHTML = '<strong>' + fraseCompleta + '</strong>';
+                document.querySelectorAll('.btn-opcao').forEach(b => b.disabled = true);
+                salvarQuestao(erroNestaQuestao === 0);
+                erroNestaQuestao = 0;
+                setTimeout(() => { indiceAtual++; carregarQuestao(); }, 1500);
             } else {
                 botao.classList.add('errado');
                 setTimeout(() => botao.classList.remove('errado'), 400);
                 erros++;
+                erroNestaQuestao++;
                 document.getElementById('contador-erros').innerText = erros;
             }
+        }
+
+        function salvarQuestao(acertou) {
+            const tempo = Math.floor((Date.now() - tempoInicioQuestao) / 1000);
+            tempoInicioQuestao = Date.now();
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operacao: 'geografia_pecuaria', nivel: 'pecuaria_questao', resposta_aluno: String(indiceAtual), acertou: acertou, tempo_segundos: tempo })
+            });
+        }
+
+        function finalizarJogo() {
+            document.getElementById('tela-quiz').style.display = 'none';
+            document.getElementById('tela-fim').style.display = 'block';
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operacao: 'geografia_pecuaria', nivel: 'pecuaria_rodada', resposta_aluno: String(erros), acertou: erros === 0, tempo_segundos: Math.floor((Date.now() - tempoInicio) / 1000) })
+            });
         }
 
         carregarQuestao();
