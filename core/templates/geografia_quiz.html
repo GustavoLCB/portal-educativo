@@ -51,20 +51,24 @@
 
     <script>
         const questoesData = {{ questoes_json|safe }};
-        let indiceAtual = 0; let erros = 0;
+        let indiceAtual = 0;
+        let erros = 0;
+        let erroNestaQuestao = 0;
         const totalQuestoes = questoesData.length;
+        const tempoInicio = Date.now();
+        let tempoInicioQuestao = Date.now();
+
         const perguntaDisplay = document.getElementById('pergunta-display');
         const opcoesDisplay = document.getElementById('opcoes-display');
         document.getElementById('total-questoes').innerText = totalQuestoes;
 
         function carregarQuestao() {
             if (indiceAtual >= totalQuestoes) {
-                document.getElementById('tela-quiz').style.display = 'none';
-                document.getElementById('tela-fim').style.display = 'block';
+                finalizarJogo();
                 return;
             }
             const dadosAtuais = questoesData[indiceAtual];
-            perguntaDisplay.innerHTML = `<strong>${dadosAtuais.pergunta}</strong>`;
+            perguntaDisplay.innerHTML = '<strong>' + dadosAtuais.pergunta + '</strong>';
             opcoesDisplay.innerHTML = '';
             document.getElementById('contador-atual').innerText = indiceAtual + 1;
 
@@ -81,13 +85,51 @@
             if (selecionada === correta) {
                 botao.classList.add('correto');
                 document.querySelectorAll('.btn-opcao').forEach(b => b.disabled = true);
+                salvarQuestao(erroNestaQuestao === 0);
+                erroNestaQuestao = 0;
                 setTimeout(() => { indiceAtual++; carregarQuestao(); }, 1200);
             } else {
                 botao.classList.add('errado');
                 setTimeout(() => botao.classList.remove('errado'), 400);
-                erros++; document.getElementById('contador-erros').innerText = erros;
+                erros++;
+                erroNestaQuestao++;
+                document.getElementById('contador-erros').innerText = erros;
             }
         }
+
+        function salvarQuestao(acertou) {
+            const tempo = Math.floor((Date.now() - tempoInicioQuestao) / 1000);
+            tempoInicioQuestao = Date.now();
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'geografia_quiz',
+                    nivel: 'quiz_questao',
+                    resposta_aluno: String(indiceAtual),
+                    acertou: acertou,
+                    tempo_segundos: tempo
+                })
+            });
+        }
+
+        function finalizarJogo() {
+            document.getElementById('tela-quiz').style.display = 'none';
+            document.getElementById('tela-fim').style.display = 'block';
+            const tempoTotal = Math.floor((Date.now() - tempoInicio) / 1000);
+            fetch('/salvar_jogada/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    operacao: 'geografia_quiz',
+                    nivel: 'quiz_rodada',
+                    resposta_aluno: String(erros),
+                    acertou: erros === 0,
+                    tempo_segundos: tempoTotal
+                })
+            });
+        }
+
         carregarQuestao();
     </script>
 </body>

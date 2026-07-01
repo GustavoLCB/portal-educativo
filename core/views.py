@@ -94,10 +94,13 @@ def relatorio_desempenho(request):
     estatisticas_matematica = []
     estatisticas_ingles = []
     estatisticas_portugues = []
-    
+    estatisticas_geografia = []
+    estatisticas_historia = []
+
     if total_geral > 0:
-        operacoes_math = ['adicao', 'subtracao', 'multiplicacao', 'divisao']
-        icones_math = {'adicao': '➕', 'subtracao': '➖', 'multiplicacao': '✖️', 'divisao': '➗'}
+        # ── MATEMÁTICA ──────────────────────────────────────────────────
+        operacoes_math = ['adicao', 'subtracao', 'multiplicacao', 'divisao', 'potenciacao']
+        icones_math = {'adicao': '➕', 'subtracao': '➖', 'multiplicacao': '✖️', 'divisao': '➗', 'potenciacao': '⚡'}
         for op in operacoes_math:
             jogadas_op = jogadas.filter(operacao=op)
             if jogadas_op.count() > 0:
@@ -109,7 +112,8 @@ def relatorio_desempenho(request):
                     'acertos': acertos, 'erros': jogadas_op.count() - acertos,
                     'taxa_acerto': round(taxa, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
                 })
-        
+
+        # ── INGLÊS ───────────────────────────────────────────────────────
         jogos_ingles = [('ingles', 'Vocabulário (Palavras)'), ('ingles_frases', 'Completar Frases')]
         for op_id, nome_op in jogos_ingles:
             jogadas_op = jogadas.filter(operacao=op_id)
@@ -122,6 +126,7 @@ def relatorio_desempenho(request):
                     'taxa_perfeicao': round(taxa_op, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
                 })
 
+        # ── PORTUGUÊS ────────────────────────────────────────────────────
         jogos_portugues = [
             ('portugues_ortografia', 'ortografia_questao', 'Ortografia', '✏️'),
             ('portugues_silaba', 'silaba_tonica_questao', 'Sílaba Tônica', '🗣️'),
@@ -129,7 +134,7 @@ def relatorio_desempenho(request):
             ('portugues_silabas', 'contagem_questao', 'Caçador de Sílabas', '✂️'),
             ('portugues_gramatica', 'nivel2_questao', 'Detetive de Palavras', '🔎'),
             ('portugues_encontros_vocalicos', 'encontros_vocalicos_questao', 'Encontros Vocálicos', '🔤'),
-            ('portugues_digrafo', 'digrafos_questao', 'Dígrafos', '🔡')
+            ('portugues_digrafo', 'digrafos_questao', 'Dígrafos', '🔡'),
         ]
         for op_id, nivel_id, nome_op, icone_op in jogos_portugues:
             jogadas_op = jogadas.filter(operacao=op_id, nivel=nivel_id)
@@ -144,11 +149,50 @@ def relatorio_desempenho(request):
                     'taxa_acerto': round(taxa_op, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
                 })
 
+        # ── GEOGRAFIA ────────────────────────────────────────────────────
+        jogos_geografia = [
+            ('geografia_quiz', 'quiz_questao', 'Quiz Agricultura', '🌾'),
+            ('geografia_pecuaria', 'pecuaria_questao', 'Pecuária', '🐄'),
+            ('geografia_paisagem', 'paisagem_questao', 'Quiz Paisagens', '📸'),
+        ]
+        for op_id, nivel_id, nome_op, icone_op in jogos_geografia:
+            jogadas_op = jogadas.filter(operacao=op_id, nivel=nivel_id)
+            if jogadas_op.count() > 0:
+                acertos_op = jogadas_op.filter(acertou=True).count()
+                taxa_op = (acertos_op / jogadas_op.count()) * 100
+                tempo_medio = jogadas_op.aggregate(Avg('tempo_segundos'))['tempo_segundos__avg']
+                estatisticas_geografia.append({
+                    'nome': nome_op, 'icone': icone_op,
+                    'total': jogadas_op.count(), 'acertos': acertos_op,
+                    'erros': jogadas_op.count() - acertos_op,
+                    'taxa_acerto': round(taxa_op, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
+                })
+
+        # ── HISTÓRIA ─────────────────────────────────────────────────────
+        jogos_historia = [
+            ('historia_cidades', 'cidades_questao', 'Crescimento das Cidades', '🏙️'),
+            ('historia_municipio', 'municipio_questao', 'O Município é de Todos', '🏛️'),
+        ]
+        for op_id, nivel_id, nome_op, icone_op in jogos_historia:
+            jogadas_op = jogadas.filter(operacao=op_id, nivel=nivel_id)
+            if jogadas_op.count() > 0:
+                acertos_op = jogadas_op.filter(acertou=True).count()
+                taxa_op = (acertos_op / jogadas_op.count()) * 100
+                tempo_medio = jogadas_op.aggregate(Avg('tempo_segundos'))['tempo_segundos__avg']
+                estatisticas_historia.append({
+                    'nome': nome_op, 'icone': icone_op,
+                    'total': jogadas_op.count(), 'acertos': acertos_op,
+                    'erros': jogadas_op.count() - acertos_op,
+                    'taxa_acerto': round(taxa_op, 1), 'tempo_medio': round(tempo_medio, 1) if tempo_medio else 0
+                })
+
     contexto = {
         'total_geral': total_geral,
         'estatisticas': estatisticas_matematica,
         'estatisticas_ingles': estatisticas_ingles,
-        'estatisticas_portugues': estatisticas_portugues
+        'estatisticas_portugues': estatisticas_portugues,
+        'estatisticas_geografia': estatisticas_geografia,
+        'estatisticas_historia': estatisticas_historia,
     }
     return render(request, 'relatorio.html', contexto)
 
